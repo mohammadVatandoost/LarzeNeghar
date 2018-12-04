@@ -18,6 +18,8 @@ Item {
         property int count: 0
         property var lineSeriesList: []
         ColumnLayout{
+            property int zoomScaleX: 1
+            id: bordarX
             spacing: 5
             RowLayout {
                 spacing: 5
@@ -77,6 +79,45 @@ Item {
 
                     }
                 }
+                ColumnLayout{
+                    spacing: 5
+                    Button {
+                        text: "zoom+"
+                        onClicked: {
+                           SensorsList.zoomPlus("x");
+                        }
+                    }
+                    Button {
+                        text: "zoom-"
+                        onClicked: {
+                           SensorsList.zoomMines("x");
+                        }
+                    }
+                    Button {
+                        text: "scrollY+"
+                        onClicked: {
+                           SensorsList.scrollDataPlus("x");
+                        }
+                    }
+                    Button {
+                        text: "scrollY-"
+                        onClicked: {
+                           SensorsList.scrollDataMines("x");
+                        }
+                    }
+                    Button {
+                        text: "scrollX+"
+                        onClicked: {
+                           SensorsList.scrollTimePlus("x");
+                        }
+                    }
+                    Button {
+                        text: "scrollX-"
+                        onClicked: {
+                           SensorsList.scrollTimeMines("x");
+                        }
+                    }
+                }
             }
             RowLayout {
                 spacing: 5
@@ -133,6 +174,21 @@ Item {
 
                     }
                 }
+                ColumnLayout{
+                    spacing: 5
+                    Button {
+                        text: "zoom+"
+                        onClicked: {
+                           SensorsList.zoomPlus("y");
+                        }
+                    }
+                    Button {
+                        text: "zoom-"
+                        onClicked: {
+                           SensorsList.zoomMines("y");
+                        }
+                    }
+                }
             }
             RowLayout {
                 spacing: 5
@@ -187,6 +243,21 @@ Item {
                             sourceComponent: if(model.bordar==="z") { checkComponent }
                         }
 
+                    }
+                }
+                ColumnLayout{
+                    spacing: 5
+                    Button {
+                        text: "zoom+"
+                        onClicked: {
+                           SensorsList.zoomPlus("z");
+                        }
+                    }
+                    Button {
+                        text: "zoom-"
+                        onClicked: {
+                           SensorsList.zoomMines("z");
+                        }
                     }
                 }
             }
@@ -274,12 +345,10 @@ Item {
 
         Timer {
             id: refreshTimer
-            interval: 1000//30 // 60 Hz
+            interval: 500//30 // 60 Hz
             running: true
             repeat: true
             onTriggered: {
-//                console.log("timer")
-
                 for(var i=0;i<scrollView.lineSeriesList.length;i++) {
                    BackEnd.updateChart(scrollView.lineSeriesList[i]);
                 }
@@ -291,30 +360,8 @@ Item {
 
                 axisZData.min = SensorsList.getSensorZmin();
                 axisZData.max = SensorsList.getSensorZmax();
-//                dataSource.update(chartView.series(1));
             }
         }
-
-//        Timer {
-//            id: refreshTimer2
-//            interval: 5000//30 // 60 Hz
-//            running: true
-//            repeat: true
-//            onTriggered: {
-////                console.log("timer")
-//                console.log("refreshTimer2")
-//                for(var i=0;i<scrollView.lineSeriesList.length;i++) {
-//                    console.log(scrollView.lineSeriesList[i].count)
-//                    for(var j=0;j<scrollView.lineSeriesList[i].count;j++) {
-////                        console.log("timer")
-//                       console.log(scrollView.lineSeriesList[i].at(j));
-//                    }
-
-////                   BackEnd.updateChart(scrollView.lineSeriesList[i]);
-//                }
-//           }
-//        }
-
 
     }
 }

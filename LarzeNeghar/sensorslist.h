@@ -29,6 +29,12 @@ public:
     Q_INVOKABLE int getSensorYmax();
     Q_INVOKABLE int getSensorZmin();
     Q_INVOKABLE int getSensorZmax();
+    Q_INVOKABLE void zoomPlus(QString bordar);
+    Q_INVOKABLE void zoomMines(QString bordar);
+    Q_INVOKABLE void scrollDataPlus(QString bordar);
+    Q_INVOKABLE void scrollDataMines(QString bordar);
+    Q_INVOKABLE void scrollTimePlus(QString bordar);
+    Q_INVOKABLE void scrollTimeMines(QString bordar);
     double getLastDataTime(QString bordar);
     int sensorXmin = 0;
     int sensorXmax = 100;
@@ -41,6 +47,17 @@ public:
     double ZmaxTime = XmaxTime;
     int channelNumCounter = 1 ;
     void changeMinMax(int minValue, int maxValue, QString bordar);
+    float zoomScaleX = 1;
+    float zoomScaleY = 1;
+    float zoomScaleZ = 1;
+    int scrollXData = 0;
+    int scrollXTime = 0;
+    int scrollYData = 0;
+    int scrollYTime = 0;
+    int scrollZData = 0;
+    int scrollZTime = 0;
+    int changeScrollData = 1;
+    int changeScrollTime = 1000;
 signals:
    void preItemAppended();
    void postItemAppended();

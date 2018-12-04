@@ -27,7 +27,9 @@
 #define Sensor_Story "SS"
 #define Sensor_Sensor_Type "SST"
 #define Sensors_Data "sensors"
-#define Sensors_settings "ST"
+#define Routers_Settings "RouterST"
+#define Sensors_settings "SensorST"
+#define Sensor_Data "SensorDT"
 #define Time_First_Sensor_Data "TFD"
 #define Router_second "SEC"
 #define Router_minute "MIN"
@@ -51,6 +53,7 @@ public:
     Q_INVOKABLE QList<int> getSenorsY(QString routerNumber, QString sensorNumber, QString bordar);
     Q_INVOKABLE void test();
     Q_INVOKABLE void sendSettings();
+
     QSerialPort *serial;
     QString come_port;
     QTimer *timer;
@@ -62,6 +65,7 @@ public:
     QString jsonToString(QJsonObject jsonObject);
     QString minute,second,miliSecond;
     QDateTimeAxis *axisXTime, *axisYTime, *axisZTime ;
+
 signals:
 
 public slots:

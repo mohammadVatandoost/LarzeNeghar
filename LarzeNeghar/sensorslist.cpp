@@ -22,58 +22,7 @@ SensorsList::SensorsList(QObject *parent) : QObject(parent)
                channelNumCounter++;
             }
         }
-//        qDebug() << "x :" << sensorXmin << " , " << sensorXmax;
-//        qDebug() << "y :" << sensorYmin << " , " << sensorYmax;
-//        qDebug() << "z :" << sensorZmin << " , " << sensorZmax;
-//        foreach(QFileInfo item, dataFolder.entryInfoList()) {
-
-//        }
-//       QDir().mkdir("Data");
-    } else {
-        qDebug() << "sensorsInfo.csv does not exist";//QDir().mkdir("Data2");
-//        if(!QDir("Data").exists()) {
-//           QDir().mkdir("Data");
-//        } else {qDebug() << "exist";}
     }
-//    QFile csvFile("./Data/"+fileName+".csv");
-
-//    Sensor temp(1,234,567,"x");
-//    QString string2 = "Monday, 23 April 12 22:51:41";
-//    QString format2 = "dddd, d MMMM yy hh:mm:ss";
-
-//    QDateTime invalid2 = QDateTime::fromString(string2, format2);
-//    QTime qTime(1,15,40,500);
-//    qDebug() << "SensorsList :" << qTime.msecsSinceStartOfDay();
-//    qDebug() << "converted :" << QTime::fromMSecsSinceStartOfDay(qTime.msecsSinceStartOfDay());
-//    for(int i=0;i<6;i++) {
-//        QTime qTime(1,15,i*10,500);
-//        qDebug() << "SensorsList :" << qTime.toString();
-//        temp.addData(qTime.msecsSinceStartOfDay(),i);
-////        QString string = "12 22:51:4"+QString::number(i);
-////        QString format = "d hh:mm:ss";
-////        QDateTime invalid = QDateTime::fromString(string, format);
-////        qDebug() << "SensorsList :" << invalid.toMSecsSinceEpoch();
-////        temp.addData(invalid.toMSecsSinceEpoch(),i);
-//    }
-//    qDebug() << "SensorsList QTime:" << QTime::fromMSecsSinceStartOfDay(QTime::fromString("01:15:20.500").msecsSinceStartOfDay()).toString();
-//    temp.addData(QTime::fromString("01:15:20.500").msecsSinceStartOfDay(),6);
-//    Sensor temp1(2,234,567,"y");
-//    for(int i=0;i<6;i++) {
-//        QString string = "12 22:51:4"+QString::number(i);
-//        QString format = "d hh:mm:ss";
-//        QDateTime invalid = QDateTime::fromString(string, format);
-//        temp.addData(invalid.toMSecsSinceEpoch(),i);
-//    }
-//    Sensor temp2(3,234,567,"z");
-//    for(int i=0;i<6;i++) {
-//        QString string = "12 22:51:4"+QString::number(i);
-//        QString format = "d hh:mm:ss";
-//        QDateTime invalid = QDateTime::fromString(string, format);
-//        temp.addData(invalid.toMSecsSinceEpoch(),i);
-//    }
-
-//    temp.addData(QDateTime::fromString("01:10:00","hh:mm:ss").toMSecsSinceEpoch(),1);
-//    sensorItems.append(temp);//sensorItems.append(temp1);sensorItems.append(temp2);
 }
 
 bool SensorsList::setSensorItem(int index, Sensor &sensor)
@@ -140,32 +89,123 @@ void SensorsList::addData(int min, int sec, int milSec, int routerNumber, int se
 
 int SensorsList::getSensorXmin()
 {
-    return sensorXmin;
+    if(sensorXmin < 0) {
+      return (sensorXmin/zoomScaleX)+scrollXData;
+    } else {
+      return (sensorXmin*zoomScaleX)+scrollXData;
+    }
+
 }
 
 int SensorsList::getSensorXmax()
 {
-    return sensorXmax;
+    if(sensorXmax < 0) {
+      return (sensorXmax*zoomScaleX)+scrollXData;
+    } else {
+      return (sensorXmax/zoomScaleX)+scrollXData;
+    }
 }
 
 int SensorsList::getSensorYmin()
 {
-    return sensorYmin;
+    if(sensorXmin < 0) {
+      return sensorYmin/zoomScaleY;
+    } else {
+        return sensorYmin*zoomScaleY;
+    }
 }
 
 int SensorsList::getSensorYmax()
 {
-    return sensorYmax;
+    if(sensorYmax < 0) {
+      return sensorYmax*zoomScaleY;
+    } else {
+        return sensorYmax/zoomScaleY;
+    }
 }
 
 int SensorsList::getSensorZmin()
 {
-    return sensorZmin;
+    if(sensorXmin < 0) {
+      return sensorZmin/zoomScaleZ;
+    } else {
+        return sensorZmin*zoomScaleZ;
+    }
 }
 
 int SensorsList::getSensorZmax()
 {
-    return sensorZmax;
+    if(sensorZmax < 0) {
+      return sensorZmax*zoomScaleZ;
+    } else {
+        return sensorZmax/zoomScaleZ;
+    }
+}
+
+void SensorsList::zoomPlus(QString bordar)
+{
+    if(bordar == "x") {
+      zoomScaleX = zoomScaleX*2;
+    } else if(bordar == "y") {
+        zoomScaleY = zoomScaleY*2;
+    } else if(bordar == "z") {
+        zoomScaleZ = zoomScaleZ*2;
+    }
+}
+
+void SensorsList::zoomMines(QString bordar)
+{
+    if(bordar == "x") {
+      zoomScaleX = zoomScaleX/2;
+    } else if(bordar == "y") {
+        zoomScaleY = zoomScaleY/2;
+    } else if(bordar == "z") {
+        zoomScaleZ = zoomScaleZ/2;
+    }
+}
+
+void SensorsList::scrollDataPlus(QString bordar)
+{
+    if(bordar == "x") {
+      scrollXData = scrollXData + (changeScrollData); // /zoomScaleX not support float if you want, should change
+    } else if(bordar == "y") {
+        scrollYData = scrollYData + (changeScrollData); // /zoomScaleY
+    } else if(bordar == "z") {
+        scrollZData = scrollZData + (changeScrollData); // /zoomScaleZ
+    }
+}
+
+void SensorsList::scrollDataMines(QString bordar)
+{
+    if(bordar == "x") {
+      scrollXData = scrollXData - (changeScrollData); // /zoomScaleX not support float if you want, should change
+    } else if(bordar == "y") {
+        scrollYData = scrollYData - (changeScrollData);// /zoomScaleY
+    } else if(bordar == "z") {
+        scrollZData = scrollZData - (changeScrollData); // /zoomScaleZ
+    }
+}
+
+void SensorsList::scrollTimePlus(QString bordar)
+{
+    if(bordar == "x") {
+      scrollXTime = scrollXTime + (changeScrollTime/zoomScaleX);
+    } else if(bordar == "y") {
+        scrollYTime = scrollYTime + (changeScrollTime/zoomScaleY);
+    } else if(bordar == "z") {
+        scrollZTime = scrollZTime + (changeScrollTime/zoomScaleZ);
+    }
+}
+
+void SensorsList::scrollTimeMines(QString bordar)
+{
+    if(bordar == "x") {
+      scrollXTime = scrollXTime - (changeScrollTime/zoomScaleX);
+    } else if(bordar == "y") {
+        scrollYTime = scrollYTime - (changeScrollTime/zoomScaleY);
+    } else if(bordar == "z") {
+        scrollZTime = scrollZTime - (changeScrollTime/zoomScaleZ);
+    }
 }
 
 double SensorsList::getLastDataTime(QString bordar)

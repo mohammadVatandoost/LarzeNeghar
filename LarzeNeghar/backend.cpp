@@ -14,7 +14,7 @@ BackEnd::BackEnd(QObject *parent) : QObject(parent)
 
     serial = new QSerialPort(this);
     serial->close();
-    serial->setBaudRate(QSerialPort::Baud9600);
+    serial->setBaudRate(QSerialPort::Baud115200);
     serial->setDataBits(QSerialPort::Data8);
     serial->setParity(QSerialPort::NoParity);
     serial->setStopBits(QSerialPort::OneStop);
@@ -107,7 +107,7 @@ void BackEnd::decodeJSON(QString message) {
     QJsonDocument qJsonDocument = QJsonDocument::fromJson(message.toUtf8());
 
     QJsonObject qJsonObject = qJsonDocument.object();
-    qDebug() << "decodeJSON test:" << jsonToString(qJsonObject);
+//    qDebug() << "decodeJSON test:" << jsonToString(qJsonObject);
     if(qJsonObject.contains(Sensors_Data) && qJsonObject.contains(Router_Unit_Number) &&
             qJsonObject.contains(Router_minute) && qJsonObject.contains(Router_second) &&
             qJsonObject.contains(Router_milisec) ) {
@@ -189,8 +189,10 @@ void BackEnd::updateChart(QAbstractSeries *chartSeries)
                 QVector<QPointF> points = sensors[i].data;
                 xySeries->replace(points);
                 if(sensors[i].bordar == "x") {
-                    axisXTime->setMin(QDateTime::fromMSecsSinceEpoch( mList->getLastDataTime("x")-(30*1000) ) );
-                    axisXTime->setMax(QDateTime::fromMSecsSinceEpoch( mList->getLastDataTime("x")+(30*1000) ) );
+                    double minXtime = mList->getLastDataTime("x")-(30*1000/mList->zoomScaleX)+mList->scrollXTime;
+                    double maxXtime = mList->getLastDataTime("x")+(30*1000/mList->zoomScaleX)+mList->scrollXTime;
+                    axisXTime->setMin(QDateTime::fromMSecsSinceEpoch( minXtime ) );
+                    axisXTime->setMax(QDateTime::fromMSecsSinceEpoch( maxXtime ) );
                 } else if(sensors[i].bordar == "y") {
                     axisYTime->setMin(QDateTime::fromMSecsSinceEpoch( mList->getLastDataTime("y")-(30*1000) ) );
                     axisYTime->setMax(QDateTime::fromMSecsSinceEpoch( mList->getLastDataTime("y")+(30*1000) ) );
@@ -198,56 +200,8 @@ void BackEnd::updateChart(QAbstractSeries *chartSeries)
                     axisZTime->setMin(QDateTime::fromMSecsSinceEpoch( mList->getLastDataTime("z")-(30*1000) ) );
                     axisZTime->setMax(QDateTime::fromMSecsSinceEpoch( mList->getLastDataTime("z")+(30*1000) ) );
                 }
-//                qDebug() << "points.length()" << points.length();
-//                for(int j=0;j<points.length();j++) {
-//                    qDebug() << QTime::fromMSecsSinceStartOfDay(points[j].x()).toString() << " , " << points[j].y();
-//                    qDebug() << points[j].x() << " , " << points[j].y();
-//                }
-//                QDateTimeAxis *axisX = new QDateTimeAxis;
-//                axisX->setTickCount(6);
-//                axisX->setFormat("MMM yyyy");
-//                qDebug() << "axisX->format()" << axisX->format();
-//                for(int j=0;j<chartSeries->attachedAxes().length();j++) {
-//                   qDebug() << "chartSeries :" <<  chartSeries->attachedAxes()[j];
-//                }
-//                axisX->setTitleText("Date");
-//                chart->addAxis(axisX, Qt::AlignBottom);
-//                series->attachAxis(axisX);
-
-//                xySeries->clear();
-                // Use replace instead of clear + append, it's optimized for performance
-//                axisXTime->setMin(QDateTime::fromString("01:00:00","hh:mm:ss"));
-//                axisXTime->setMax(QDateTime::fromString("05:00:00","hh:mm:ss"));
-//                axisXTime->setMin(QDateTime::currentDateTime());
-//                axisXTime->setMax(QDateTime::fromMSecsSinceEpoch(QDateTime::currentDateTime().toMSecsSinceEpoch()+3600000));
-//                QDateTime temp;temp.setTime(QTime(1, 10, 00, 345));
-//                xySeries->append(QDateTime::fromString("01:10:00:345","hh:mm:ss:zzz").toMSecsSinceEpoch(),10);
-//                qDebug() << "true" << QDateTime::currentDateTime().toMSecsSinceEpoch();
-//                qDebug() << "not true" << QDateTime::currentDateTime().toMSecsSinceEpoch()+3600000;
-//                xySeries->append(QDateTime::currentDateTime().toMSecsSinceEpoch()+360000,10);
-//                xySeries->append(QDateTime::currentDateTime().toMSecsSinceEpoch()+720000,20);
-//                xySeries->append(temp.t oMSecsSinceEpoch(),50);
-//                xySeries->append(QTime(3, 10, 10, 0).msecsSinceStartOfDay(),60);
-//                xySeries->append(QDateTime::fromString("04:10:00:678","hh:mm:ss:zzz").toMSecsSinceEpoch(),30);
-//                xySeries->append(QDateTime::fromString("04:10:00","hh:mm:ss").toMSecsSinceEpoch(),40);
-//                xySeries->append(QDateTime::fromString("05:10:00","hh:mm:ss").toMSecsSinceEpoch(),50);
-
-//                qDebug() << "is equal";
             }
         }
-//        if(sensors.length() > 0) {
-
-//            qDebug() << "addData" << temp.at(index).dataY.length();
-//            temp[index].addData(time,data);
-//        }
-//        m_index++;
-//        if (m_index > m_data.count() - 1)
-//            m_index = 0;
-
-//        QVector<QPointF> points = m_data.at(m_index);
-        // Use replace instead of clear + append, it's optimized for performance
-//        xySeries->replace(points);
-
     }
 }
 
@@ -283,7 +237,7 @@ void BackEnd::timerSlot()
         if(serial->open(QIODevice::ReadWrite)) {
           connectState = true; qDebug() << " conndected : ";
           connect(serial, SIGNAL(readyRead()), SLOT(recieveSerialPort()));
-          sendInitialize();
+          sendInitialize();sendInitialize();sendInitialize();sendInitialize();sendInitialize();
         } else {
             connectState = false; qDebug() << "Not conndected : ";
             serial->close();
@@ -304,20 +258,20 @@ void BackEnd::recieveSerialPort()
     for(int i=0;i<data.length();i++) {
         QByteArray *temp = new QByteArray(1,data[i]) ;
         if( data[i] == '{' && flagRecieve == 0) {
-            flagRecieve++;recivedSerialPort.clear();recivedSerialPort.append(*temp);
+            flagRecieve++;recivedSerialPort.clear();recivedSerialPort.append(*temp);//qDebug() << "recieveSerialPort :" << recivedSerialPort;
         } else if(data[i] == '{' && flagRecieve > 0) {
-            flagRecieve++;recivedSerialPort.append(*temp);
+            flagRecieve++;recivedSerialPort.append(*temp);//qDebug() << "recieveSerialPort :" << recivedSerialPort;
         } else if(data[i] == '}' && flagRecieve == 1) {
             flagRecieve--;recivedSerialPort.append(*temp);decodeJSON(recivedSerialPort);
         } else if(data[i] == '}' && flagRecieve > 1) {
-            flagRecieve--;recivedSerialPort.append(*temp);
+            flagRecieve--;recivedSerialPort.append(*temp);//qDebug() << "recieveSerialPort :" << recivedSerialPort;
         } else {
             recivedSerialPort.append(*temp);
         }
 //       qDebug() << " :" << data[i];
     }
 //    recivedSerialPort.append(temp);
-//        qDebug() << "recieveSerialPort :" << recivedSerialPort;
+//   qDebug() << "recieveSerialPort :" << recivedSerialPort;
 }
 
 void BackEnd::addData(int min, int sec, int milSec, int routerNumber, int sensorNumber,
