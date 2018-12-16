@@ -58,6 +58,7 @@ public:
     int scrollZTime = 0;
     int changeScrollData = 1;
     int changeScrollTime = 1000;
+    double getDateTimeToMSec();
 signals:
    void preItemAppended();
    void postItemAppended();

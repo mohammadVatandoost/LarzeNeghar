@@ -11,6 +11,7 @@ Item {
         id: monitoringTab
         property int columnNum: 18
         property int baseWidth: 30
+        property int firstColumnWidth: 35
         property int md_1: 1
         property int md_2: 2
         property int md_3: 3
@@ -45,7 +46,7 @@ Item {
 //            highlight: highlightBar
             id: listView
             headerPositioning: ListView.OverlayHeader
-            spacing: 10
+            spacing: 0
             model: SensorModel {
                 list: SensorsList
             }
@@ -57,10 +58,11 @@ Item {
                Rectangle {
                    id: header_cn
 //                 width:
-                   width: baseWidth*md_4
+                   width: firstColumnWidth*md_4
 //                 Layout.width: listView.width/columnNum
 //                 Layout.minimumWidth:
                  Text {
+                   font.bold: true
                    anchors.centerIn: parent
                    text: "Channel Number"
                  }
@@ -70,6 +72,7 @@ Item {
                  width: baseWidth*md_3
                  Text {
                    id: header_un
+                   font.bold: true
                    anchors.centerIn: parent
                    text: "Router Number"
                  }
@@ -79,6 +82,7 @@ Item {
                  width: baseWidth*md_3
                  Text {
                    id: header_sn
+                   font.bold: true
                    anchors.centerIn: parent
                    text: "Sensor Number"
                  }
@@ -88,6 +92,7 @@ Item {
                  width: baseWidth*md_2
                  Text {
                    id: header_bn
+                   font.bold: true
                    anchors.centerIn: parent
                    text: "Bordar"
                  }
@@ -97,6 +102,7 @@ Item {
                  width: baseWidth*md_4
                  Text {
                    id: header_des
+                   font.bold: true
                    anchors.centerIn: parent
                    text: "Description"
                  }
@@ -106,6 +112,7 @@ Item {
                  width: baseWidth*md_3
                  Text {
                    id: header_bl
+                   font.bold: true
                    anchors.centerIn: parent
                    text: "Battery Level"
                  }
@@ -115,6 +122,7 @@ Item {
                  width: baseWidth*md_3
                  Text {
                    id: header_sr
+                   font.bold: true
                    anchors.centerIn: parent
                    text: "Sample Rate"
                  }
@@ -124,6 +132,7 @@ Item {
                  width: baseWidth*md_3
                  Text {
                    id: header_bf
+                   font.bold: true
                    anchors.centerIn: parent
                    text: "Bandpass Filter"
                  }
@@ -133,6 +142,7 @@ Item {
                  width: baseWidth*md_2
                  Text {
                    id: header_story
+                   font.bold: true
                    anchors.centerIn: parent
                    text: "Story"
                  }
@@ -142,6 +152,7 @@ Item {
                  width: baseWidth*md_5
                  Text {
                    id: header_sol
+                   font.bold: true
                    anchors.centerIn: parent
                    text: "Saving on Local"
                  }
@@ -151,6 +162,7 @@ Item {
                  width: baseWidth*md_5
                  Text {
                    id: header_sow
+                   font.bold: true
                    anchors.centerIn: parent
                    text: "Saving on Web"
                  }
@@ -160,6 +172,7 @@ Item {
                  width: baseWidth*md_5
                  Text {
                    id: header_stw
+                   font.bold: true
                    anchors.centerIn: parent
                    text: "Sending to Web"
                  }
@@ -169,6 +182,7 @@ Item {
                  width: baseWidth*md_3
                  Text {
                    id: header_st
+                   font.bold: true
                    anchors.centerIn: parent
                    text: "Sensor Type"
                  }
@@ -176,18 +190,40 @@ Item {
             }
 
             delegate: Rectangle {
+//                anchors.centerIn: parent
+                width: parent.width
+                height: 50
+                color: if(model.channelNumber%2 == 0){"#e6e6e6"} else {"#f2f2f2"}
+
+//                color: "blue"
 //                color: if(model.channelNumber%2 == 0){"red"}
-                height: 30
+//                height: 30
+//                Rectangle {
+//                    anchors.right: parent.right
+//                    anchors.top: parent.top
+//                    anchors.bottom: parent.bottom
+//                    anchors.bottomMargin: 1
+//                    anchors.topMargin: 1
+//                    width: 1
+//                    color: "blue"
+//                }
+
                 RowLayout {
                     Layout.fillWidth: false
+                    anchors.verticalCenter: parent.verticalCenter
                     spacing: 10
-                    Layout.topMargin: 100
+//                    Layout.topMargin: 100
+//                    palette.alternateBase : "blue"
                     Rectangle {
-                        width: monitoringTab.baseWidth*monitoringTab.md_4
+                        width: monitoringTab.firstColumnWidth*monitoringTab.md_4
                         Text {
                             anchors.centerIn: parent
                             text: model.channelNumber
                         }
+//                        Rectangle {
+//                            color: "blue"
+//                            anchors.fill: parent
+//                        }
                     }
                     ToolSeparator {}
                     Rectangle {
@@ -313,6 +349,9 @@ Item {
                console.log("Apply");
                 BackEnd.sendSettings();
 //               console.log(SensorsList)
+            }
+            palette {
+                    button: "#5cb85c"
             }
         }
 }

@@ -14,18 +14,23 @@ Item {
         anchors.fill: parent
         Component.onCompleted: {
 //            chartX.createSeries()
+//            console.log("scrollView");console.log(parent.width)
         }
         property int count: 0
         property var lineSeriesList: []
+        property int chartsWidth: 1100
+        property int checkBowContainerWidth: 400
+        property int chartControlWidth: 200
         ColumnLayout{
             property int zoomScaleX: 1
+            anchors.fill: parent
             id: bordarX
             spacing: 5
             RowLayout {
                 spacing: 5
                 ChartView {
                     title: "X"
-                    width: 1000
+                    width: scrollView.chartsWidth
                     height: 500
                     antialiasing: true
                     id: chartX
@@ -64,6 +69,7 @@ Item {
                     rowSpacing: 3
                     columnSpacing: 3
                     id: xGridLayout
+                    width: scrollView.checkBowContainerWidth
                     property int counter: 0
                     Repeater {
                         model: SensorModel {
@@ -80,6 +86,7 @@ Item {
                     }
                 }
                 ColumnLayout{
+                    width: scrollView.chartControlWidth
                     spacing: 5
                     Button {
                         text: "zoom+"
@@ -123,7 +130,7 @@ Item {
                 spacing: 5
                 ChartView {
                     title: "Y"
-                    width: 1000
+                    width: scrollView.chartsWidth
                     height: 500
                     antialiasing: true
                     id: chartY
@@ -161,6 +168,7 @@ Item {
                     columns: 3
                     rowSpacing: 3
                     columnSpacing: 3
+                    width: scrollView.checkBowContainerWidth
                     Repeater {
                         model: SensorModel {
                             list: SensorsList
@@ -175,6 +183,7 @@ Item {
                     }
                 }
                 ColumnLayout{
+                    width: scrollView.chartControlWidth
                     spacing: 5
                     Button {
                         text: "zoom+"
@@ -194,7 +203,7 @@ Item {
                 spacing: 5
                 ChartView {
                     title: "Z"
-                    width: 1000
+                    width: scrollView.chartsWidth
                     height: 500
                     antialiasing: true
                     id: chartZ
@@ -232,6 +241,7 @@ Item {
                     columns: 3
                     rowSpacing: 3
                     columnSpacing: 3
+                    width: scrollView.checkBowContainerWidth
                     Repeater {
                         model: SensorModel {
                             list: SensorsList
@@ -247,6 +257,7 @@ Item {
                 }
                 ColumnLayout{
                     spacing: 5
+                    width: scrollView.chartControlWidth
                     Button {
                         text: "zoom+"
                         onClicked: {

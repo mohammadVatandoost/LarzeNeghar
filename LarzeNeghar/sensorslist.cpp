@@ -44,6 +44,8 @@ QVector<Sensor> SensorsList::items()
 
 void SensorsList::addSensor(Sensor newSensor)
 {
+    // add to csvFile
+//    appendDataToCSV();
     sensorItems.append(newSensor);
 }
 
@@ -53,6 +55,7 @@ void SensorsList::addData(int min, int sec, int milSec, int routerNumber, int se
     int minDataValue = 0;
     int maxDataValue = 0;
     for(int i=0;i<sensorItems.length();i++) {
+        // find sensor
        if(sensorItems[i].routerNumber == routerNumber && sensorItems[i].sensorNumber == sensorNumber
                && sensorItems[i].bordar == sensorBordar) {
           isNewSensor = false ; // is not new Sensor
@@ -64,12 +67,13 @@ void SensorsList::addData(int min, int sec, int milSec, int routerNumber, int se
                   if(maxDataValue < minDataValue) { minDataValue = maxDataValue; }
                   maxDataValue = dataValue;
               } else if(dataValue < minDataValue) { minDataValue = dataValue ; }
-              sensorItems[i].addData((min*60*1000+sec*1000+milSec+(j/2)*10), dataValue);
+              sensorItems[i].addData(getDateTimeToMSec()+(min*60*1000+sec*1000+milSec+(j/2)*10), dataValue);
               j++;
           }
        }
     }
     if(isNewSensor) {
+        // is new sensor
         Sensor newSensor(sensorItems.length()+1, routerNumber, sensorNumber, sensorBordar);
         for(int j=0; j<sensorDatas.length();j++) {
             QChar first_8bit = sensorDatas[j];
@@ -79,11 +83,12 @@ void SensorsList::addData(int min, int sec, int milSec, int routerNumber, int se
                 if(maxDataValue < minDataValue) { minDataValue = maxDataValue; }
                 maxDataValue = dataValue;
             } else if(dataValue < minDataValue) { minDataValue = dataValue ; }
-            newSensor.addData((min*60*1000+sec*1000+milSec+(j/2)*10), dataValue);
+            newSensor.addData(getDateTimeToMSec()+(min*60*1000+sec*1000+milSec+(j/2)*10), dataValue);
             j++;
         }
         addSensor(newSensor);
     }
+    // for scaling chart
     changeMinMax(minDataValue, maxDataValue, sensorBordar);
 }
 
@@ -233,6 +238,18 @@ void SensorsList::changeMinMax(int minValue, int maxValue, QString bordar)
         if( sensorZmin > minValue ) { sensorZmin = minValue; }
         if( sensorZmax < maxValue ) { sensorZmax = maxValue; }
     }
+}
+
+double SensorsList::getDateTimeToMSec()
+{
+    QDateTime temp = QDateTime::currentDateTime()  ;
+//    qDebug() << "QDateTime::currentDateTime() "<< temp.toString();
+    QTime tempTime(QTime::currentTime().hour(),0,0,0);
+//    qDebug() << "QTime "<< tempTime.toString("hh:mm:ss:zzz");
+ //   tempTime.
+    temp.setTime(tempTime);
+    return temp.toMSecsSinceEpoch();
+//    qDebug() << "QDateTime::currentDateTime() after "<< temp.toString();
 }
 
 void SensorsList::appendItem()

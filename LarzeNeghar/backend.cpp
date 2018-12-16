@@ -247,7 +247,7 @@ void BackEnd::timerSlot()
        serial->close();
        connectState = false; //qDebug() << "Disconndected : ";
    }
-//   sendInitialize();
+   sendInitialize();
 }
 
 void BackEnd::recieveSerialPort()
