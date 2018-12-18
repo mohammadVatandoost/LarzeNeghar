@@ -28,6 +28,8 @@ BackEnd::BackEnd(QObject *parent) : QObject(parent)
 void BackEnd::setSensorsList(SensorsList *sensorsList)
 {
     mList = sensorsList;
+//    mList->addSensor(Sensor(1,2,3,"x"));
+//    mList->addData(1, 1, 2, 1, 2, "y", "1234");
 }
 
 QVector<Sensor> BackEnd::getSensorsList()
@@ -89,12 +91,14 @@ void BackEnd::sendSettings()
     for(int i=0;i<sensors.length();i++) {
         QJsonObject temp;
         temp.insert(Sensor_Sample_Rate, sensors[i].sampleRate);
-        temp.insert(Sensor_Bandpass_Filter, sensors[i].bandpassFilter);
-        temp.insert(Sensor_Unit_Number, QString::number(sensors[i].routerNumber)+QString::number(sensors[i].sensorNumber)
-                    +sensors[i].bordar);
+        QStringList pieces = sensors[i].bandpassFilter.split( "-" );
+        temp.insert(Sensor_Bandpass_Filter_Low, pieces[0]);
+        temp.insert(Sensor_Bandpass_Filter_High, pieces[1]);
+        temp.insert(Sensor_Unit_Number, sensors[i].sensorNumber);
+        temp.insert(Sensor_Type, sensors[i].bordar);
         sensorsArray.append(temp);
     }
-    qJsonObject.insert(Sensors_settings,sensorsArray);
+    qJsonObject.insert(Sensors_Frequency_Parameters, sensorsArray);
     QString strJson(jsonToString(qJsonObject));
     qDebug() << "sendSettings : " << strJson;
     sendSerial(strJson);
@@ -105,37 +109,63 @@ void BackEnd::decodeJSON(QString message) {
     message = message.remove("\n");
     qDebug() << "decodeJSON :" << message;
     QJsonDocument qJsonDocument = QJsonDocument::fromJson(message.toUtf8());
-
     QJsonObject qJsonObject = qJsonDocument.object();
+    if(qJsonObject.contains(Data_Check_SUM)) {
+        qDebug() << "has check sum";
+        if(checkCheckSum(message, qJsonObject.value(Data_Check_SUM).toInt())) {
+           qDebug() << "check sum correct";
+        } else {qDebug() << "check sum wrong"; }
+    }
+
 //    qDebug() << "decodeJSON test:" << jsonToString(qJsonObject);
-    if(qJsonObject.contains(Sensors_Data) && qJsonObject.contains(Router_Unit_Number) &&
-            qJsonObject.contains(Router_minute) && qJsonObject.contains(Router_second) &&
+//    if(qJsonObject.contains(Sensor_Data)) {qDebug() << "decodeJSON test Sensor_Data:"  ;}
+//    if(qJsonObject.contains(Router_Unit_Number)) {qDebug() << "decodeJSON test Router_Unit_Number:" << qJsonObject.value(Router_Unit_Number).toInt();}
+//    if(qJsonObject.contains(Router_minute)) {qDebug() << "decodeJSON test Router_minute:" << qJsonObject.value(Router_minute).toInt()  ;}
+//    if(qJsonObject.contains(Router_second)) {qDebug() << "decodeJSON test Router_second:" << qJsonObject.value(Router_second).toInt()  ;}
+//    if(qJsonObject.contains(Router_milisec)) {qDebug() << "decodeJSON test Router_milisec:" << qJsonObject.value(Router_milisec).toInt()  ;}
+
+    if(qJsonObject.contains(Sensor_Data) && qJsonObject.contains(Router_Unit_Number) &&
+            qJsonObject.contains(Router_second) &&
             qJsonObject.contains(Router_milisec) ) {
-        qDebug() << "decodeJSON : has Sensors_Data";
+//        qDebug() << "decodeJSON : has Sensors_Data";
         int routerNumber = qJsonObject.value(Router_Unit_Number).toInt();
-        int min = qJsonObject.value(Router_minute).toInt();
+        int min = minute.toInt();
         int sec = qJsonObject.value(Router_second).toInt();
         int milSec = qJsonObject.value(Router_milisec).toInt();
-        QJsonArray sensorsData = qJsonObject.value(Sensors_Data).toArray();
+//        qDebug() << "routerNumber :" << routerNumber << "," << min << "," << sec << "," << milSec;
+        QJsonArray sensorsData = qJsonObject.value(Sensor_Data).toArray();
         foreach (const QJsonValue & value, sensorsData) {
             QJsonObject obj = value.toObject();
             if(obj.contains(Sensor_Unit_Number)) {
-                qDebug() << "decodeJSON : has Sensor_Unit_Number";
+//                qDebug() << "decodeJSON : has Sensor_Unit_Number";
                 int sensorNumber = obj.value(Sensor_Unit_Number).toInt();
+//                qDebug() << "Sensor_Unit_Number : " << sensorNumber;
                 if(obj.contains(Sensor_Data_X)) {
+                    qDebug() << "Sensor_Data_X  ";
                    addData(min, sec, milSec, routerNumber, sensorNumber,"x",obj.value(Sensor_Data_X).toString());
                 }
                 if(obj.contains(Sensor_Data_Y)) {
+//                    qDebug() << "Sensor_Data_Y  ";
                    addData(min, sec, milSec, routerNumber, sensorNumber,"y",obj.value(Sensor_Data_Y).toString());
                 }
                 if(obj.contains(Sensor_Data_Z)) {
+//                    qDebug() << "Sensor_Data_Z  ";
                    addData(min, sec, milSec, routerNumber, sensorNumber,"z",obj.value(Sensor_Data_Z).toString());
                 }
             }
         }
-    } else if( qJsonObject.contains(Sensor_Unit_Number) && qJsonObject.contains(Sensor_Data_X) &&
-              qJsonObject.contains(Sensor_Data_Y) && qJsonObject.contains(Sensor_Data_Z) ) {
+    } else if( qJsonObject.contains(Sensors_settings) && qJsonObject.contains(Routers_Settings) ) {
        qDebug() << "decodeJSON : has Sensors setting data";
+       QJsonArray sensorsSettings = qJsonObject.value(Sensors_settings).toArray();
+       foreach (const QJsonValue & value, sensorsSettings) {
+           QJsonObject obj = value.toObject();
+           int sensorNumber = obj.value(Sensor_Unit_Number).toInt();
+           QString sensorType = obj.value(Sensor_Type).toString();
+           QString sensorBatteryLevel = obj.value(Sensor_Battery_Level).toString();
+           qDebug() << "sensor settings :"<< sensorNumber << "," << sensorType << "," << sensorBatteryLevel;
+           mList->setSensorsSettings(sensorNumber, sensorType, sensorBatteryLevel);
+       }
+//       QJsonArray routersSettings = qJsonObject.value(Routers_Settings).toArray();
     }
 }
 
@@ -164,6 +194,20 @@ void BackEnd::updateTime()
     second = QString::number(temp.second());
     miliSecond = QString::number(temp.msec());
     //    qDebug()<<"updateTime : "<<minute << ":" << second << ":" << miliSecond ;
+}
+
+bool BackEnd::checkCheckSum(QString jsonPacket, int checkSum)
+{
+    QString temp = jsonPacket.replace(",\"DCS\":"+jsonPacket.split(",\"DCS\":")[1],"");
+    qDebug() << "checkCheckSum : " << temp;
+    QByteArray data; data.append(temp);
+    uint32_t sum = 0;
+    for(int i=0; i<data.length(); i++) {
+       sum = sum + data[i];
+    }
+    qDebug() << "CheckSum : " << checkSum << " sum : " << (sum%256);
+    if( (sum%256) == checkSum ) { return true; }
+    return false;
 }
 
 QString BackEnd::jsonToString(QJsonObject jsonObject)
@@ -247,7 +291,14 @@ void BackEnd::timerSlot()
        serial->close();
        connectState = false; //qDebug() << "Disconndected : ";
    }
-   sendInitialize();
+   timerCounter++;
+   if(timerCounter == 30) {updateTime();timerCounter = 0;}
+   if(timerCounter2 == 1) {sendInitialize();}
+   timerCounter2++;
+   if(timerCounter2 == 200) {sendInitialize();timerCounter2 = 2;}
+//   qDebug() << "mList length :" << mList->items().length();
+//   mList->addData(1, 1, 2, 1, 2, "z", "1234");
+//   sendInitialize();
 }
 
 void BackEnd::recieveSerialPort()
@@ -271,7 +322,7 @@ void BackEnd::recieveSerialPort()
 //       qDebug() << " :" << data[i];
     }
 //    recivedSerialPort.append(temp);
-//   qDebug() << "recieveSerialPort :" << recivedSerialPort;
+//   qDebug() << "recieveSerialPort :" << QString::fromStdString(data.toStdString());
 }
 
 void BackEnd::addData(int min, int sec, int milSec, int routerNumber, int sensorNumber,

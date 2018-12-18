@@ -4,25 +4,25 @@ SensorsList::SensorsList(QObject *parent) : QObject(parent)
 {
 //    QDir dataFolder("Data");
     QFile csvFile("./Data/sensorsInfo.csv");
-    if(csvFile.exists()) {
-        QVector<QStringList> sensorsList = readCSV("./Data/sensorsInfo.csv", ",");
-        qDebug() << "sensorsList.length() :" << sensorsList.length() ;
-        for(int i=0; i<sensorsList.length(); i++) {
-            qDebug() << sensorsList[i].length() ;
-            if(sensorsList[i].length() > 11) {
-                bool sOL = true; bool sOW = true; bool sTW = true;
-                if(sensorsList[i][8] == "FALSE") {sOL = false;}
-                if(sensorsList[i][9] == "FALSE") {sOW = false;}
-                if(sensorsList[i][10] == "FALSE") {sTW = false;}
-               Sensor temp(channelNumCounter, sensorsList[i][0].toInt(),sensorsList[i][1].toInt(), sensorsList[i][2],
-                       sensorsList[i][3], sensorsList[i][4], sensorsList[i][5].toInt(), sensorsList[i][6], sensorsList[i][7],
-                       sOL, sOW, false, sensorsList[i][11] );
-               changeMinMax(temp.min, temp.max, temp.bordar);
-               sensorItems.append(temp);
-               channelNumCounter++;
-            }
-        }
-    }
+//    if(csvFile.exists()) {
+//        QVector<QStringList> sensorsList = readCSV("./Data/sensorsInfo.csv", ",");
+//        qDebug() << "sensorsList.length() :" << sensorsList.length() ;
+//        for(int i=0; i<sensorsList.length(); i++) {
+//            qDebug() << sensorsList[i].length() ;
+//            if(sensorsList[i].length() > 11) {
+//                bool sOL = true; bool sOW = true; bool sTW = true;
+//                if(sensorsList[i][8] == "FALSE") {sOL = false;}
+//                if(sensorsList[i][9] == "FALSE") {sOW = false;}
+//                if(sensorsList[i][10] == "FALSE") {sTW = false;}
+//               Sensor temp(channelNumCounter, sensorsList[i][0].toInt(),sensorsList[i][1].toInt(), sensorsList[i][2],
+//                       sensorsList[i][3], sensorsList[i][4], sensorsList[i][5].toInt(), sensorsList[i][6], sensorsList[i][7],
+//                       sOL, sOW, false, sensorsList[i][11] );
+//               changeMinMax(temp.min, temp.max, temp.bordar);
+//               sensorItems.append(temp);
+//               channelNumCounter++;
+//            }
+//        }
+//    }
 }
 
 bool SensorsList::setSensorItem(int index, Sensor &sensor)
@@ -46,7 +46,10 @@ void SensorsList::addSensor(Sensor newSensor)
 {
     // add to csvFile
 //    appendDataToCSV();
+    emit preItemAppended();
+    qDebug() << "add new Sensor" ;
     sensorItems.append(newSensor);
+    emit postItemAppended();
 }
 
 void SensorsList::addData(int min, int sec, int milSec, int routerNumber, int sensorNumber, QString sensorBordar, QString sensorDatas)
@@ -54,15 +57,19 @@ void SensorsList::addData(int min, int sec, int milSec, int routerNumber, int se
     bool isNewSensor = true; // for checking new sensor
     int minDataValue = 0;
     int maxDataValue = 0;
+//    qDebug() << "sensprs list length" << sensorItems.length();
     for(int i=0;i<sensorItems.length();i++) {
         // find sensor
+//        qDebug() << "sensprs list find sensor";
        if(sensorItems[i].routerNumber == routerNumber && sensorItems[i].sensorNumber == sensorNumber
                && sensorItems[i].bordar == sensorBordar) {
           isNewSensor = false ; // is not new Sensor
+//          qDebug() << "sensprs list sensor is not new";
           for(int j=0; j<sensorDatas.length();j++) {
               QChar first_8bit = sensorDatas[j];
               QChar second_8bit = sensorDatas[j+1];
               int dataValue = first_8bit.toLatin1()*256 + second_8bit.toLatin1() ;
+//              qDebug() << "dataValue :" << dataValue;
               if( dataValue > maxDataValue ) {
                   if(maxDataValue < minDataValue) { minDataValue = maxDataValue; }
                   maxDataValue = dataValue;
@@ -74,6 +81,7 @@ void SensorsList::addData(int min, int sec, int milSec, int routerNumber, int se
     }
     if(isNewSensor) {
         // is new sensor
+//        qDebug() << "sensprs list sensor is new";
         Sensor newSensor(sensorItems.length()+1, routerNumber, sensorNumber, sensorBordar);
         for(int j=0; j<sensorDatas.length();j++) {
             QChar first_8bit = sensorDatas[j];
@@ -90,6 +98,30 @@ void SensorsList::addData(int min, int sec, int milSec, int routerNumber, int se
     }
     // for scaling chart
     changeMinMax(minDataValue, maxDataValue, sensorBordar);
+}
+
+void SensorsList::setSensorsSettings(int sensorNumber, QString sensorBordar, QString batteryLevel)
+{
+    qDebug() << "sensprs list setSensorsSettings";
+    for(int i=0;i<sensorItems.length();i++) {
+        // find sensor
+       if(sensorItems[i].sensorNumber == sensorNumber && sensorItems[i].bordar == sensorBordar) {
+           qDebug() << "sensprs list find sensor";
+           sensorItems[i].batteryLevel = batteryLevel;
+       }
+    }
+}
+
+void SensorsList::setRoutersSettings(int routerNumber, QString batteryLevel)
+{
+//    qDebug() << "routers list setRoutersSettings";
+//    for(int i=0;i<sensorItems.length();i++) {
+//        // find sensor
+//       if(sensorItems[i].sensorNumber == sensorNumber && sensorItems[i].bordar == sensorBordar) {
+//           qDebug() << "sensprs list find sensor";
+//           sensorItems[i].batteryLevel = batteryLevel;
+//       }
+//    }
 }
 
 int SensorsList::getSensorXmin()

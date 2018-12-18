@@ -17,28 +17,39 @@
 //#define Sensor_Channel_Number "SCN"
 
 #define Sensor_Unit_Number "SUN"
-#define Router_Unit_Number "RUN"
-#define Sensor_Data_X "SDX"
-#define Sensor_Data_Y "SDY"
-#define Sensor_Data_Z "SDZ"
+#define Sensor_Type "SST"
 #define Sensor_Battery_Level "SBL"
 #define Sensor_Sample_Rate "SSR"
 #define Sensor_Bandpass_Filter "SBF"
+#define Sensor_Bandpass_Filter_Low "SBFL"
+#define Sensor_Bandpass_Filter_High "SBFH"
 #define Sensor_Story "SS"
-#define Sensor_Sensor_Type "SST"
-#define Sensors_Data "sensors"
-#define Routers_Settings "RouterST"
-#define Sensors_settings "SensorST"
-#define Sensor_Data "SensorDT"
 #define Time_First_Sensor_Data "TFD"
+
+#define Router_Unit_Number "RUN"
 #define Router_second "SEC"
 #define Router_minute "MIN"
 #define Router_milisec "Msc"
 #define Router_Battery_Level "RBL"
+
+#define Sensor_Data_X "SDX"
+#define Sensor_Data_Y "SDY"
+#define Sensor_Data_Z "SDZ"
+#define Sensors_settings "ST"
+
 #define Data_Check_SUM "DCS"
+
 #define Time_Minute "TM"
 #define Time_Second "TS"
 #define Time_Mili_Second "TMS"
+
+#define Routers_Settings "RT"
+
+#define Sensor_Data "DT"
+#define Sensors_Frequency_Parameters "SFP"
+
+#define ACK "ACK"
+#define NACk "NACk"
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -53,15 +64,17 @@ public:
     Q_INVOKABLE QList<int> getSenorsY(QString routerNumber, QString sensorNumber, QString bordar);
     Q_INVOKABLE void test();
     Q_INVOKABLE void sendSettings();
-
     QSerialPort *serial;
     QString come_port;
     QTimer *timer;
+    uint8_t timerCounter = 0 ;
+    uint8_t timerCounter2 = 0 ;
     bool connectState = false;
     void decodeJSON(QString message);
     void sendSerial(QString temp);
     void sendInitialize();
     void updateTime();
+    bool checkCheckSum(QString jsonPacket, int checkSum);
     QString jsonToString(QJsonObject jsonObject);
     QString minute,second,miliSecond;
     QDateTimeAxis *axisXTime, *axisYTime, *axisZTime ;

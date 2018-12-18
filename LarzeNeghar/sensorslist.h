@@ -23,6 +23,8 @@ public:
     void addSensor(Sensor newSensor);
     void addData(int min, int sec, int milSec, int routerNumber, int sensorNumber,
                  QString sensorBordar, QString sensorDatas);
+    void setSensorsSettings(int sensorNumber, QString sensorBordar, QString batteryLevel);
+    void setRoutersSettings(int routerNumber, QString batteryLevel);
     Q_INVOKABLE int getSensorXmin();
     Q_INVOKABLE int getSensorXmax();
     Q_INVOKABLE int getSensorYmin();
