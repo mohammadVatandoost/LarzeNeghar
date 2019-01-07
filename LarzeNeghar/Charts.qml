@@ -1,4 +1,4 @@
-import QtQuick 2.0
+﻿import QtQuick 2.0
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.11
 import QtCharts 2.0
@@ -197,6 +197,30 @@ Item {
                            SensorsList.zoomMines("y");
                         }
                     }
+                    Button {
+                        text: "scrollY+"
+                        onClicked: {
+                           SensorsList.scrollDataPlus("y");
+                        }
+                    }
+                    Button {
+                        text: "scrollY-"
+                        onClicked: {
+                           SensorsList.scrollDataMines("y");
+                        }
+                    }
+                    Button {
+                        text: "scrollX+"
+                        onClicked: {
+                           SensorsList.scrollTimePlus("y");
+                        }
+                    }
+                    Button {
+                        text: "scrollX-"
+                        onClicked: {
+                           SensorsList.scrollTimeMines("y");
+                        }
+                    }
                 }
             }
             RowLayout {
@@ -256,8 +280,8 @@ Item {
                     }
                 }
                 ColumnLayout{
-                    spacing: 5
                     width: scrollView.chartControlWidth
+                    spacing: 5
                     Button {
                         text: "zoom+"
                         onClicked: {
@@ -268,6 +292,30 @@ Item {
                         text: "zoom-"
                         onClicked: {
                            SensorsList.zoomMines("z");
+                        }
+                    }
+                    Button {
+                        text: "scrollY+"
+                        onClicked: {
+                           SensorsList.scrollDataPlus("z");
+                        }
+                    }
+                    Button {
+                        text: "scrollY-"
+                        onClicked: {
+                           SensorsList.scrollDataMines("z");
+                        }
+                    }
+                    Button {
+                        text: "scrollX+"
+                        onClicked: {
+                           SensorsList.scrollTimePlus("z");
+                        }
+                    }
+                    Button {
+                        text: "scrollX-"
+                        onClicked: {
+                           SensorsList.scrollTimeMines("z");
                         }
                     }
                 }

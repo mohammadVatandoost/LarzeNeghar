@@ -3,7 +3,7 @@
 SensorsList::SensorsList(QObject *parent) : QObject(parent)
 {
 //    QDir dataFolder("Data");
-    QFile csvFile("./Data/sensorsInfo.csv");
+//    QFile csvFile("./Data/sensorsInfo.csv");
 //    if(csvFile.exists()) {
 //        QVector<QStringList> sensorsList = readCSV("./Data/sensorsInfo.csv", ",");
 //        qDebug() << "sensorsList.length() :" << sensorsList.length() ;
@@ -68,8 +68,9 @@ void SensorsList::addData(int min, int sec, int milSec, int routerNumber, int se
           for(int j=0; j<sensorDatas.length();j++) {
               QChar first_8bit = sensorDatas[j];
               QChar second_8bit = sensorDatas[j+1];
-              int dataValue = first_8bit.toLatin1()*256 + second_8bit.toLatin1() ;
-//              qDebug() << "dataValue :" << dataValue;
+              int dataValue = first_8bit.toLatin1() + second_8bit.toLatin1()*256 ;
+//              qDebug() << "first_8bit: "<< first_8bit.toLatin1()<< " second_8bit:" << second_8bit.toLatin1();
+              qDebug() << "dataValue "+sensorBordar<< " :" << dataValue;
               if( dataValue > maxDataValue ) {
                   if(maxDataValue < minDataValue) { minDataValue = maxDataValue; }
                   maxDataValue = dataValue;
@@ -86,7 +87,7 @@ void SensorsList::addData(int min, int sec, int milSec, int routerNumber, int se
         for(int j=0; j<sensorDatas.length();j++) {
             QChar first_8bit = sensorDatas[j];
             QChar second_8bit = sensorDatas[j+1];
-            int dataValue = first_8bit.toLatin1()*256 + second_8bit.toLatin1() ;
+            int dataValue = first_8bit.toLatin1() + second_8bit.toLatin1()*256 ;
             if( dataValue > maxDataValue ) {
                 if(maxDataValue < minDataValue) { minDataValue = maxDataValue; }
                 maxDataValue = dataValue;

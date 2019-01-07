@@ -73,7 +73,10 @@ public:
     void decodeJSON(QString message);
     void sendSerial(QString temp);
     void sendInitialize();
+    void sendACK();
+    void sendNACK();
     void updateTime();
+    void getSettings();
     bool checkCheckSum(QString jsonPacket, int checkSum);
     QString jsonToString(QJsonObject jsonObject);
     QString minute,second,miliSecond;

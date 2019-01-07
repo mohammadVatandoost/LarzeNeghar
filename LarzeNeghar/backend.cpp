@@ -85,20 +85,48 @@ void BackEnd::test()
 
 void BackEnd::sendSettings()
 {
+//    sendInitialize();
     QVector<Sensor> sensors = mList->items();
     QJsonObject qJsonObject;
-    QJsonArray sensorsArray;
+//    QJsonArray sensorsArray;
+
+    QString sensorsUnitNumber = "";
+    QString sensorsLowPass = "";
+    QString sensorsHighPss = "";
+    QString sensorsSampleRate = "";
+//    char *acsUserName ;
+    qJsonObject.insert(Sensors_Frequency_Parameters, "T");
     for(int i=0;i<sensors.length();i++) {
-        QJsonObject temp;
-        temp.insert(Sensor_Sample_Rate, sensors[i].sampleRate);
+        QString sensorUnitNumber = QString::number(sensors[i].sensorNumber);
         QStringList pieces = sensors[i].bandpassFilter.split( "-" );
-        temp.insert(Sensor_Bandpass_Filter_Low, pieces[0]);
-        temp.insert(Sensor_Bandpass_Filter_High, pieces[1]);
-        temp.insert(Sensor_Unit_Number, sensors[i].sensorNumber);
-        temp.insert(Sensor_Type, sensors[i].bordar);
-        sensorsArray.append(temp);
+        qJsonObject.insert(Sensor_Bandpass_Filter_Low+sensorUnitNumber, pieces[0]);
+        qJsonObject.insert(Sensor_Bandpass_Filter_High+sensorUnitNumber, pieces[1]);
+        qJsonObject.insert(Sensor_Sample_Rate+sensorUnitNumber, sensors[i].sampleRate);
+//        QChar temp = i;
+//        uint8_t sensorUnitNumber1 = sensors[i].sensorNumber%256;
+//        uint8_t sensorUnitNumber2 = sensors[i].sensorNumber/256;
+//        sensorsUnitNumber.append(temp);sensorsUnitNumber.append(temp);
+//        int LowPassFileter = pieces[0].toInt();
+////        qDebug() << "LowPassFileter : " << LowPassFileter;
+//        uint8_t sensorLowPass1 = LowPassFileter%256;
+//        uint8_t sensorLowPass2 = LowPassFileter/256;
+////        qDebug() << "sensorLowPass1 : " << sensorLowPass1 << "sensorLowPass2 : " << sensorLowPass2 ;
+//        sensorsLowPass.append(temp);sensorsLowPass.append(temp);
+////        qDebug() << "sensorsLowPass : " << sensorsLowPass;
+//        int HighPassFileter = pieces[1].toInt();
+////        qDebug() << "HighPassFileter : " << HighPassFileter;
+//        uint8_t sensorHighPass1 = HighPassFileter%256;
+//        uint8_t sensorHighPass2 = HighPassFileter/256;
+////        qDebug() << "sensorHighPass1 : " << sensorHighPass1 << "sensorHighPass2 : " << sensorHighPass2 ;
+//        sensorsHighPss.append(temp);sensorsHighPss.append(temp);
+////        qDebug() << "sensorsHighPss : " << sensorsHighPss;
+//        uint8_t sensorSampleRate1 = sensors[i].sampleRate%256;
+//        uint8_t sensorSampleRate2 = sensors[i].sampleRate/256;
+//        sensorsSampleRate.append(temp);sensorsSampleRate.append(temp);
     }
-    qJsonObject.insert(Sensors_Frequency_Parameters, sensorsArray);
+//    qJsonObject.insert(Sensor_Unit_Number, sensorsUnitNumber);
+
+//    qJsonObject.insert(Sensors_Frequency_Parameters, sensorsArray);
     QString strJson(jsonToString(qJsonObject));
     qDebug() << "sendSettings : " << strJson;
     sendSerial(strJson);
@@ -110,12 +138,12 @@ void BackEnd::decodeJSON(QString message) {
     qDebug() << "decodeJSON :" << message;
     QJsonDocument qJsonDocument = QJsonDocument::fromJson(message.toUtf8());
     QJsonObject qJsonObject = qJsonDocument.object();
-    if(qJsonObject.contains(Data_Check_SUM)) {
-        qDebug() << "has check sum";
-        if(checkCheckSum(message, qJsonObject.value(Data_Check_SUM).toInt())) {
-           qDebug() << "check sum correct";
-        } else {qDebug() << "check sum wrong"; }
-    }
+//    if(qJsonObject.contains(Data_Check_SUM)) {
+////        qDebug() << "has check sum";
+//        if(checkCheckSum(message, qJsonObject.value(Data_Check_SUM).toInt())) {
+//           qDebug() << "check sum correct";sendACK();
+//        } else {qDebug() << "check sum wrong"; sendNACK();}
+//    }
 
 //    qDebug() << "decodeJSON test:" << jsonToString(qJsonObject);
 //    if(qJsonObject.contains(Sensor_Data)) {qDebug() << "decodeJSON test Sensor_Data:"  ;}
@@ -154,6 +182,7 @@ void BackEnd::decodeJSON(QString message) {
                 }
             }
         }
+        getSettings();
     } else if( qJsonObject.contains(Sensors_settings) && qJsonObject.contains(Routers_Settings) ) {
        qDebug() << "decodeJSON : has Sensors setting data";
        QJsonArray sensorsSettings = qJsonObject.value(Sensors_settings).toArray();
@@ -184,7 +213,23 @@ void BackEnd::sendInitialize()
    qJsonObject.insert(Time_Second,second);
    qJsonObject.insert(Time_Mili_Second,miliSecond);
    qDebug() << "sendInitialize : " << jsonToString(qJsonObject);
-  sendSerial(jsonToString(qJsonObject)) ;
+   sendSerial(jsonToString(qJsonObject)) ;
+}
+
+void BackEnd::sendACK()
+{
+    QJsonObject qJsonObject;
+    qJsonObject.insert(ACK, "T");
+    qDebug() << "sendACK : " << jsonToString(qJsonObject);
+    sendSerial(jsonToString(qJsonObject)) ;
+}
+
+void BackEnd::sendNACK()
+{
+    QJsonObject qJsonObject;
+    qJsonObject.insert(NACk, "T");
+    qDebug() << "sendNACK : " << jsonToString(qJsonObject);
+    sendSerial(jsonToString(qJsonObject)) ;
 }
 
 void BackEnd::updateTime()
@@ -194,6 +239,15 @@ void BackEnd::updateTime()
     second = QString::number(temp.second());
     miliSecond = QString::number(temp.msec());
     //    qDebug()<<"updateTime : "<<minute << ":" << second << ":" << miliSecond ;
+}
+
+void BackEnd::getSettings()
+{
+    QJsonObject qJsonObject;
+    qJsonObject.insert(Sensors_Frequency_Parameters, "?");
+    QString strJson(jsonToString(qJsonObject));
+    qDebug() << "getSettings : " << strJson;
+    sendSerial(strJson);
 }
 
 bool BackEnd::checkCheckSum(QString jsonPacket, int checkSum)
