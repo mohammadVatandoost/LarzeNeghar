@@ -70,7 +70,7 @@ void SensorsList::addData(int min, int sec, int milSec, int routerNumber, int se
               QChar second_8bit = sensorDatas[j+1];
               int dataValue = first_8bit.toLatin1() + second_8bit.toLatin1()*256 ;
 //              qDebug() << "first_8bit: "<< first_8bit.toLatin1()<< " second_8bit:" << second_8bit.toLatin1();
-              qDebug() << "dataValue "+sensorBordar<< " :" << dataValue;
+//              qDebug() << "dataValue "+sensorBordar<< " :" << dataValue;
               if( dataValue > maxDataValue ) {
                   if(maxDataValue < minDataValue) { minDataValue = maxDataValue; }
                   maxDataValue = dataValue;
@@ -146,7 +146,7 @@ int SensorsList::getSensorXmax()
 
 int SensorsList::getSensorYmin()
 {
-    if(sensorXmin < 0) {
+    if(sensorYmin < 0) {
       return sensorYmin/zoomScaleY;
     } else {
         return sensorYmin*zoomScaleY;
@@ -164,7 +164,7 @@ int SensorsList::getSensorYmax()
 
 int SensorsList::getSensorZmin()
 {
-    if(sensorXmin < 0) {
+    if(sensorZmin < 0) {
       return sensorZmin/zoomScaleZ;
     } else {
         return sensorZmin*zoomScaleZ;
@@ -216,11 +216,17 @@ void SensorsList::scrollDataPlus(QString bordar)
 void SensorsList::scrollDataMines(QString bordar)
 {
     if(bordar == "x") {
-      scrollXData = scrollXData - (changeScrollData); // /zoomScaleX not support float if you want, should change
+      if((scrollXData - (changeScrollData))>0) {
+        scrollXData = scrollXData - (changeScrollData); // /zoomScaleX not support float if you want, should change
+      }
     } else if(bordar == "y") {
-        scrollYData = scrollYData - (changeScrollData);// /zoomScaleY
+        if((scrollXData - (changeScrollData))>0) {
+          scrollYData = scrollYData - (changeScrollData);// /zoomScaleY
+        }
     } else if(bordar == "z") {
-        scrollZData = scrollZData - (changeScrollData); // /zoomScaleZ
+        if((scrollXData - (changeScrollData))>0) {
+          scrollZData = scrollZData - (changeScrollData); // /zoomScaleZ
+        }
     }
 }
 
@@ -238,11 +244,17 @@ void SensorsList::scrollTimePlus(QString bordar)
 void SensorsList::scrollTimeMines(QString bordar)
 {
     if(bordar == "x") {
-      scrollXTime = scrollXTime - (changeScrollTime/zoomScaleX);
+        if((scrollXTime - (changeScrollTime/zoomScaleX))>0) {
+          scrollXTime = scrollXTime - (changeScrollTime/zoomScaleX);
+        }
     } else if(bordar == "y") {
-        scrollYTime = scrollYTime - (changeScrollTime/zoomScaleY);
+        if((scrollYTime - (changeScrollTime/zoomScaleY))>0) {
+          scrollYTime = scrollYTime - (changeScrollTime/zoomScaleY);
+        }
     } else if(bordar == "z") {
-        scrollZTime = scrollZTime - (changeScrollTime/zoomScaleZ);
+        if((scrollZTime - (changeScrollTime/zoomScaleZ))>0) {
+          scrollZTime = scrollZTime - (changeScrollTime/zoomScaleZ);
+        }
     }
 }
 

@@ -28,7 +28,13 @@ Item {
             spacing: 5
             RowLayout {
                 spacing: 5
-                ChartView {
+                ScrollView {
+                        id: scrollview2
+//                        anchors.fill: parent
+
+                        contentWidth: chartX.width
+                        contentHeight: chartX.height
+                 ChartView {
                     title: "X"
                     width: scrollView.chartsWidth
                     height: 500
@@ -63,6 +69,7 @@ Item {
 //                            }
 //                        }
 //                    }
+                }
                 }
                 GridLayout {
                     columns: 3

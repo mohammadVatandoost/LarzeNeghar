@@ -1,0 +1,13 @@
+debug/main.o
+debug/sensor.o
+debug/sensorslist.o
+debug/sensormodel.o
+debug/backend.o
+debug/csv.o
+debug/ChannelsList_qml.o
+debug/Charts_qml.o
+debug/main_qml.o
+debug/qmlcache_loader.o
+debug/moc_sensorslist.o
+debug/moc_sensormodel.o
+debug/moc_backend.o

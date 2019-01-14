@@ -77,6 +77,7 @@ public:
     void sendNACK();
     void updateTime();
     void getSettings();
+    int stringByteToInt(QString temp);
     bool checkCheckSum(QString jsonPacket, int checkSum);
     QString jsonToString(QJsonObject jsonObject);
     QString minute,second,miliSecond;
