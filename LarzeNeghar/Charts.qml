@@ -6,15 +6,14 @@ import QtQuick 2.6
 import QtQuick.Window 2.2
 import SensorModel 1.0
 import QtQuick.Controls 2.4
-//import QtQuick.Layouts 1.3
+
 Item {
     ScrollView
     {
         id: scrollView
         anchors.fill: parent
         Component.onCompleted: {
-//            chartX.createSeries()
-//            console.log("scrollView");console.log(parent.width)
+
         }
         property int count: 0
         property var lineSeriesList: []
@@ -28,23 +27,12 @@ Item {
             spacing: 5
             RowLayout {
                 spacing: 5
-                ScrollView {
-                        id: scrollview2
-//                        anchors.fill: parent
-
-                        contentWidth: chartX.width
-                        contentHeight: chartX.height
-                 ChartView {
+                ChartView {
                     title: "X"
                     width: scrollView.chartsWidth
                     height: 500
                     antialiasing: true
                     id: chartX
-//                    ValueAxis {
-//                        id: axisXTime
-//                        min: 0
-//                        max: 10
-//                    }
                     DateTimeAxis {
                         id: axisXTime
                         Component.onCompleted: {
@@ -59,17 +47,6 @@ Item {
                         min: 0
                         max: 1
                     }
-//                    Repeater {
-//                        model: SensorModel {
-//                            list: SensorsList
-//                        }
-//                        Item {
-//                            Component.onCompleted: {
-//                                scrollView.plotDataX(model.routerNumber, model.sensorNumber, model.bordar, true)
-//                            }
-//                        }
-//                    }
-                }
                 }
                 GridLayout {
                     columns: 3
@@ -141,11 +118,6 @@ Item {
                     height: 500
                     antialiasing: true
                     id: chartY
-//                    ValueAxis {
-//                        id: axisYTime
-//                        min: 0
-//                        max: 10
-//                    }
                     DateTimeAxis {
                         id: axisYTime
                         Component.onCompleted: {
@@ -160,16 +132,6 @@ Item {
                         min: 0
                         max: 1
                     }
-//                    Repeater {
-//                        model: SensorModel {
-//                            list: SensorsList
-//                        }
-//                        Item {
-//                            Component.onCompleted: {
-//                                scrollView.plotDataY(model.routerNumber, model.sensorNumber, model.bordar, true)
-//                            }
-//                        }
-//                    }
                 }
                 GridLayout {
                     columns: 3
@@ -238,11 +200,6 @@ Item {
                     height: 500
                     antialiasing: true
                     id: chartZ
-//                    ValueAxis {
-//                        id: axisZTime
-//                        min: 0
-//                        max: 10
-//                    }
                     DateTimeAxis {
                         id: axisZTime
                         Component.onCompleted: {
@@ -257,16 +214,7 @@ Item {
                         min: 0
                         max: 1
                     }
-//                    Repeater {
-//                        model: SensorModel {
-//                            list: SensorsList
-//                        }
-//                        Item {
-//                            Component.onCompleted: {
-//                                scrollView.plotDataZ(model.routerNumber, model.sensorNumber, model.bordar, true)
-//                            }
-//                        }
-//                    }
+
                 }
                 GridLayout {
                     columns: 3
@@ -334,8 +282,6 @@ Item {
                 text: routerNumber+" , "+sensorNumber+" , "+bordar
                 onCheckStateChanged: scrollView.removeOrAddSeries(routerNumber, sensorNumber, bordar, checked)
                 Component.onCompleted: {
-//                    console.log(routerNumber+" , "+sensorNumber+" , "+bordar)
-//                    console.log(counterLoader)
                 }
             }
         }
@@ -343,25 +289,13 @@ Item {
             if(bordar === "x" && checked) {
                 var line = chartX.createSeries(ChartView.SeriesTypeLine, routerNumber+" , "+sensorNumber+" , "+bordar,
                                                axisXTime, axisXData);
-//                var dataX = BackEnd.getSenorsX(routerNumber, sensorNumber, bordar)
-//                var dataY = BackEnd.getSenorsY(routerNumber, sensorNumber, bordar)
-//                for(var i = 0; i<dataX.length;i++ ) {
-//                   line.append(dataX[i],dataY[i])
-//                }
                 lineSeriesList.push(line)
-//                console.log("lineSeries name :")
-//                console.log(line.name)
             }
         }
         function plotDataY(routerNumber, sensorNumber, bordar, checked) {
             if(bordar === "y" && checked) {
                 var line = chartY.createSeries(ChartView.SeriesTypeLine,routerNumber+" , "+sensorNumber+" , "+bordar,
                                                axisYTime, axisYData);
-//                var dataX = BackEnd.getSenorsX(routerNumber, sensorNumber, bordar)
-//                var dataY = BackEnd.getSenorsY(routerNumber, sensorNumber, bordar)
-//                for(var i = 0; i<dataX.length;i++ ) {
-//                    line.append(dataX[i],dataY[i])
-//                }
                 lineSeriesList.push(line)
             }
         }
@@ -369,11 +303,6 @@ Item {
             if(bordar === "z" && checked) {
                 var line = chartZ.createSeries(ChartView.SeriesTypeLine,routerNumber+" , "+sensorNumber+" , "+bordar,
                                                axisZTime, axisZData);
-//                var dataX = BackEnd.getSenorsX(routerNumber, sensorNumber, bordar)
-//                var dataY = BackEnd.getSenorsY(routerNumber, sensorNumber, bordar)
-//                for(var i = 0; i<dataX.length;i++ ) {
-//                   line.append(dataX[i],dataY[i])
-//                }
                 lineSeriesList.push(line)
             }
        }

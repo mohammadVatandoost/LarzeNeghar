@@ -3,7 +3,7 @@
 Sensor::Sensor(int cN, int rN, int sN, QString b)
 {
    channelNumber= cN; routerNumber = rN; sensorNumber = sN; bordar = b;
-   getDataFromCSV();
+//   getDataFromCSV();
 }
 
 Sensor::Sensor(int cN, int rN, int sN, QString b, QString d, QString bL, int sR, QString bF, QString s, bool sOL, bool sOW,
@@ -12,7 +12,7 @@ Sensor::Sensor(int cN, int rN, int sN, QString b, QString d, QString bL, int sR,
   channelNumber= cN; routerNumber = rN; sensorNumber = sN; bordar = b; description = d; sampleRate = sR;
   bandpassFilter = bF;  savingOnLocal = sOL; savingOnWeb = sOW; sendingToWeb = sTW ; story = s;
   sensorType = sT;
-  getDataFromCSV();
+//  getDataFromCSV();
 }
 
 Sensor::Sensor()

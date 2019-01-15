@@ -25,7 +25,9 @@
 #define Sensor_Bandpass_Filter_High "SBFH"
 #define Sensor_Story "SS"
 #define Time_First_Sensor_Data "TFD"
-
+#define Router_Packet_Lenth         "RPL"
+#define Sensor_Data_Num             "SDN"
+#define Sensor_Num                  "SN"
 #define Router_Unit_Number "RUN"
 #define Router_second "SEC"
 #define Router_minute "MIN"
@@ -51,6 +53,12 @@
 #define ACK "ACK"
 #define NACk "NACk"
 
+#define START_BYTE0 0xA5
+#define START_BYTE1 0x5A
+
+#define STOP_BYTE0   0x80
+#define STOP_BYTE1   0x90
+
 QT_CHARTS_USE_NAMESPACE
 
 class BackEnd : public QObject
@@ -66,9 +74,11 @@ public:
     Q_INVOKABLE void sendSettings();
     QSerialPort *serial;
     QString come_port;
-    QTimer *timer;
+    QTimer *timer, *packetTimer;
     uint8_t timerCounter = 0 ;
     uint8_t timerCounter2 = 0 ;
+    uint8_t packetTimerCounter = 11 ;
+    uint8_t jsonPacketTimerCounter = 11 ;
     bool connectState = false;
     void decodeJSON(QString message);
     void sendSerial(QString temp);
@@ -77,12 +87,19 @@ public:
     void sendNACK();
     void updateTime();
     void getSettings();
-    int stringByteToInt(QString temp);
+    void decodeByteArray();
+    void resetPacketSwitch();
     bool checkCheckSum(QString jsonPacket, int checkSum);
+    void sendNack();
     QString jsonToString(QJsonObject jsonObject);
     QString minute,second,miliSecond;
     QDateTimeAxis *axisXTime, *axisYTime, *axisZTime ;
-
+    int routerNum, sensorQuantity, routerMinute, routerSecnd, routerMiliSec, checkSum, packetLengh, SensorDataSize;
+    int flagStart = 10 ; int byteCounter = 0;
+    uint8_t passMinute ;
+     QByteArray *bufByte;
+     QByteArray dataByte;
+     int packetSize;
 signals:
 
 public slots:
@@ -92,14 +109,15 @@ public slots:
     void setAxisZTime(QDateTimeAxis *axis);
     void appendItem(); //Sensor sensorItem
     void timerSlot();
+    void timerPacketTimeOut();
 private slots:
     void recieveSerialPort();
 private:
     SensorsList *mList;
     QString recivedSerialPort;
     int flagRecieve = 0;
-    void addData(int min, int sec, int milSec, int routerNumber, int sensorNumber,
-                 QString sensorBordar, QString sensorDatas);
+//    void addData(int min, int sec, int milSec, int routerNumber, int sensorNumber,
+//                 QString sensorBordar, QString sensorDatas);
 };
 
 #endif // BACKEND_H

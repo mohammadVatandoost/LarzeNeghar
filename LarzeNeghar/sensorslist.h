@@ -11,6 +11,7 @@
 #include <QFile>
 #include <QTextStream>
 #include "csv.h"
+#include <QTimer>
 
 class SensorsList : public QObject
 {
@@ -22,9 +23,11 @@ public:
     QVector<Sensor> sensorItems;
     void addSensor(Sensor newSensor);
     void addData(int min, int sec, int milSec, int routerNumber, int sensorNumber,
-                 QString sensorBordar, QString sensorDatas);
+                 QString sensorBordar, int dataValue, uint8_t dataNumber);
     void setSensorsSettings(int sensorNumber, QString sensorBordar, QString batteryLevel);
     void setRoutersSettings(int routerNumber, QString batteryLevel);
+    void setSensorFrequency(int sensorNumber, int sampleRate, QString bandpassFilter);
+    void addSensorInfoToCSV(Sensor newSensor);
     Q_INVOKABLE int getSensorXmin();
     Q_INVOKABLE int getSensorXmax();
     Q_INVOKABLE int getSensorYmin();
@@ -60,7 +63,11 @@ public:
     int scrollZTime = 0;
     int changeScrollData = 1;
     int changeScrollTime = 1000;
+    QTimer *timer;
     double getDateTimeToMSec();
+    QList<int> sensorsListCSVCounter;
+public slots:
+    void timerSlot();
 signals:
    void preItemAppended();
    void postItemAppended();

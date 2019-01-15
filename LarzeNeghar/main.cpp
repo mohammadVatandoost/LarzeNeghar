@@ -10,7 +10,7 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-
+//    QCoreApplication::addLibraryPath("C:/Qt/plugins");
     QApplication app(argc, argv);
 
     qmlRegisterType<SensorModel>("SensorModel", 1, 0, "SensorModel");

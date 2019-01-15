@@ -39,8 +39,7 @@ public:
     void getDataFromCSV();
     int min = 0;
     int max = 0;
-//    QVector<SensorData> data;
-//    QList<SensorData> sensorData;
+
 };
 
 #endif // SENSOR_H

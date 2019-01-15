@@ -3,7 +3,6 @@ QT += serialport
 QT += sql
 QT += qml
 QT += charts
-QT += core-private
 CONFIG += c++11
 
 # The following define makes your compiler emit warnings if you use
@@ -26,8 +25,6 @@ SOURCES += \
     csv.cpp
 
 RESOURCES += qml.qrc
-
-QMAKE_LFLAGS += -static
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =

@@ -2,11 +2,8 @@ import QtQuick 2.7
 import QtQuick.Window 2.2
 import QtQuick.Controls 2.4
 import QtQuick.Layouts 1.3
-
 import SensorModel 1.0
-//import BackEnd 1.0
 
-//ColumnLayout {
 Item {
         id: monitoringTab
         property int columnNum: 18
@@ -18,32 +15,15 @@ Item {
         property int md_4: 4
         property int md_5: 5
         property int textFieldWidth: columnNum*2
-//        BackEnd {
-//            id: backend
-//        }
 
         Layout.fillWidth: true
         Component.onCompleted: {
-//            backend.setSensorsList(SensorsList)
-//            console.log("SensorsList.sensorData")
-//            console.log(BackEnd.getSenorsX(0))
-//            console.log(BackEnd.getSenorsY(0))
         }
-//        Rectangle
-//            {
-//                id: background
-//                anchors.fill: parent
-//                color: "blue"
-//            }
-
-//        Rectangle {
-//            color: "red"
         ListView {
             implicitWidth: monitoringTab.width
             implicitHeight: 500
             Layout.fillWidth: false
             clip: true
-//            highlight: highlightBar
             id: listView
             headerPositioning: ListView.OverlayHeader
             spacing: 0
@@ -190,40 +170,19 @@ Item {
             }
 
             delegate: Rectangle {
-//                anchors.centerIn: parent
                 width: parent.width
                 height: 50
                 color: if(model.channelNumber%2 == 0){"#e6e6e6"} else {"#f2f2f2"}
-
-//                color: "blue"
-//                color: if(model.channelNumber%2 == 0){"red"}
-//                height: 30
-//                Rectangle {
-//                    anchors.right: parent.right
-//                    anchors.top: parent.top
-//                    anchors.bottom: parent.bottom
-//                    anchors.bottomMargin: 1
-//                    anchors.topMargin: 1
-//                    width: 1
-//                    color: "blue"
-//                }
-
                 RowLayout {
                     Layout.fillWidth: false
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 10
-//                    Layout.topMargin: 100
-//                    palette.alternateBase : "blue"
                     Rectangle {
                         width: monitoringTab.firstColumnWidth*monitoringTab.md_4
                         Text {
                             anchors.centerIn: parent
                             text: model.channelNumber
                         }
-//                        Rectangle {
-//                            color: "blue"
-//                            anchors.fill: parent
-//                        }
                     }
                     ToolSeparator {}
                     Rectangle {
@@ -342,33 +301,14 @@ Item {
 
         Button {
             text: qsTr("Apply")
-//            anchors.centerIn: parent
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: listView.bottom
             onClicked: {
                console.log("Apply");
                 BackEnd.sendSettings();
-//               console.log(SensorsList)
             }
             palette {
                     button: "#5cb85c"
             }
         }
 }
-//    RowLayout {
-//        Button {
-//            text: qsTr("Add new Item  ")
-//            Layout.fillWidth: false
-//            onClicked: {
-//                SensorsList.appendItem()
-////                console.log("SensorsList.sensorData")
-////                console.log(SensorsList.getSensorsList())
-//            }
-//        }
-//        Button {
-//            text: qsTr("Add new Item Backend")
-//            Layout.fillWidth: false
-//            onClicked: backend.appendItem()
-//        }
-//    }
-//}

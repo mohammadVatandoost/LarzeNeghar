@@ -2,7 +2,6 @@
 
 void appendDataToCSV(QVector<QStringList> dataList, QString fileDirection) {
     QFile csvFile(fileDirection);
-
         if(csvFile.open(QIODevice::WriteOnly | QIODevice::Append) )
         {
             QTextStream textStream( &csvFile );
@@ -33,12 +32,9 @@ QVector<QStringList> readCSV(QString fileLocation, QString splitString) {
         {
             QString line = in.readLine();
             QStringList stringList;
-//            qDebug() << line ;
             for (QString item : line.split(splitString)) {
                 stringList.append(item);
             }
-//            stringList = stringList[0].split(',');
-//            stringList.
             temp.append(stringList);
         }
         file.close();
