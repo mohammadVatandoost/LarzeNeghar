@@ -50,7 +50,7 @@ void SensorsList::addData(int min, int sec, int milSec, int routerNumber, int se
        if(sensorItems[i].routerNumber == routerNumber && sensorItems[i].sensorNumber == sensorNumber
                && sensorItems[i].bordar == sensorBordar) {
           isNewSensor = false ; // is not new Sensor
-//              qDebug() << "dataValue "+sensorBordar<< " :" << dataValue;
+//              qDebug() << "dataValue "<<sensorNumber<<","<<sensorBordar<< " :" << dataValue;
               if( dataValue > maxDataValue ) {
                   if(maxDataValue < minDataValue) { minDataValue = maxDataValue; }
                   maxDataValue = dataValue;

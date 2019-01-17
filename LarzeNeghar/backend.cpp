@@ -25,7 +25,7 @@ BackEnd::BackEnd(QObject *parent) : QObject(parent)
     timer->start(1000);
     packetTimer = new QTimer(this);
     connect(packetTimer, SIGNAL(timeout()), this, SLOT(timerPacketTimeOut()));
-    packetTimer->start(10);
+    packetTimer->start(15);
 //    decodeJSON("{\"RUN\":\"0\",\"Msc\":\"0\",\"SEC\":\"1\",\"SN\":\"2\",\"SDN\":\"10\",\"RPL\":\"126\",\"DCS\":\"70\"}");
 //    decodeJSON("{\"ST\":[{\"SUN\":\"0\",\"SST\":\"0\",\"SBL\":\"0\"},{\"SUN\":\"0\",\"SST\":\"0\",\"SBL\":\"0\"}],\"RT\":[{\"RUN\":\"0\",\"RBL\":\"0\"}]}");
 }
@@ -244,11 +244,16 @@ void BackEnd::getSettings()
 
 void BackEnd::decodeByteArray()
 {
-    uint32_t sum = 0 ;
+    uint64_t sum = 0 ;
     for(int i =0; i<dataByte.length();i++) {
-        sum = sum + dataByte[i];
+        sum = sum + ((uint8_t)dataByte[i]);
     }
-//    qDebug() << "checkSum :"<< (sum%256) << " my checkSum:"<< sum;
+//    qDebug() <<((uint8_t)dataByte[0])<<","<<((uint8_t)dataByte[1])<<","<<((uint8_t)dataByte[2])<<","
+//             <<((uint8_t)dataByte[3])<<","<<((uint8_t)dataByte[4])<<","<<((uint8_t)dataByte[5])<<","
+//             <<((uint8_t)dataByte[6])<<","<<((uint8_t)dataByte[7])<<","<<((uint8_t)dataByte[8])<<","
+//             <<((uint8_t)dataByte[9])<<","<<((uint8_t)dataByte[10])<<","<<((uint8_t)dataByte[11])<<","
+//             <<((uint8_t)dataByte[12])<<","<<((uint8_t)dataByte[13])<<",";
+//    qDebug() << "length :"<< dataByte.length() << "checkSum :"<< (sum%256) << " my checkSum:"<< sum;
     if((sum%256) == checkSum) {
     uint8_t sensorNumber[sensorQuantity];
      for(int i =0; i<dataByte.length();i++) {
@@ -261,13 +266,24 @@ void BackEnd::decodeByteArray()
            } else {passMinute = routerMinute ;}
 
            // 6 forward step data is constant
-            int xData = dataByte[i] + (dataByte[i+1]*256) ; i++;i++;
+//            int xData = dataByte[i] + (dataByte[i+1]*256) ; i++;i++;
+            int xData = ((dataByte[i] & 0xff) | (dataByte[i + 1] << 8));
+            qDebug()<<"xData: " <<i<<":" <<sensorNumber[i / (SensorDataSize+1)]<<","<<((uint8_t)dataByte[i])<<","<<((uint8_t)dataByte[i+1])<<","<< xData;
+            i++;i++;
+            //qDebug()<<xData;
 //            qDebug().noquote() << "decodeByteArray x" << i << "," << (i / (SensorDataSize+1))<< "," << ((i%(SensorDataSize+1))-1)/6;
             mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, sensorNumber[i / (SensorDataSize+1)], "x", xData, (i%(SensorDataSize+1))/6);
-            int yData = dataByte[i] + (dataByte[i+1]*256) ; i++;i++;
+//            int yData = dataByte[i] + (dataByte[i+1]*256) ; i++;i++;
+//            int yData = dataByte[i] | dataByte[i+1] << 8 ;
+            int yData = ((dataByte[i] & 0xff) | (dataByte[i + 1] << 8));
+//            qDebug()<<"yData: " <<((uint8_t)dataByte[i])<<","<<((uint8_t)dataByte[i+1])<<","<< yData;
+            i++;i++;
 //            qDebug().noquote() << "decodeByteArray y " << i << "," << (i / (SensorDataSize+1))<< "," << ((i%(SensorDataSize+1))-1)/6;
             mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, sensorNumber[i / (SensorDataSize+1)], "y", yData, (i%(SensorDataSize+1))/6);
-            int zData = dataByte[i] + (dataByte[i+1]*256) ; i++; // next i++ happen in for
+//            int zData = dataByte[i] + (dataByte[i+1]*256) ; i++; // next i++ happen in for
+            int zData = ((dataByte[i] & 0xff) | (dataByte[i + 1] << 8)); i++;
+            //qDebug()<<zData;
+
 //            qDebug().noquote() << "decodeByteArray z" << i << "," << (i / (SensorDataSize+1))<< "," << ((i%(SensorDataSize+1))-1)/6;
             mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, sensorNumber[i / (SensorDataSize+1)], "z", zData, (i%(SensorDataSize+1))/6);
        } else {
@@ -276,7 +292,7 @@ void BackEnd::decodeByteArray()
      }
     } else {
          qDebug() << "**************check sum is wrong";sendNack();
-         qDebug().noquote() << dataByte.toHex();
+//         qDebug().noquote() << dataByte.toHex();
     }
 }
 
@@ -375,6 +391,7 @@ void BackEnd::timerSlot()
                    serial->setPortName(port.portName());
                    qDebug() << " portName : " << port.portName();
         }
+        serial->setPortName("COM11");
         if(serial->open(QIODevice::ReadWrite)) {
           connectState = true; qDebug() << " conndected : ";
           connect(serial, SIGNAL(readyRead()), SLOT(recieveSerialPort()));
@@ -395,7 +412,7 @@ void BackEnd::timerSlot()
    if(timerCounter2 == 1) {sendInitialize();}
    timerCounter2++;
    if(timerCounter2 == 200) {sendInitialize();timerCounter2 = 2;}
-   qDebug() << "mList length :" << mList->items().length();
+//   qDebug() << "mList length :" << mList->items().length();
 //   mList->addData(1, 1, 2, 1, 2, "z", "1234");
    //   sendInitialize();
 }
@@ -404,10 +421,10 @@ void BackEnd::timerPacketTimeOut()
 {
    packetTimerCounter++;
    jsonPacketTimerCounter++;
-   if(packetTimerCounter == 10) {
+   if(packetTimerCounter == 9) {
        resetPacketSwitch();qDebug() << "============ packetTimerCounter timeout";
    }
-   if(jsonPacketTimerCounter == 10) {
+   if(jsonPacketTimerCounter == 9) {
        qDebug() << "============ jsonPacketTimerCounter timeout";
        flagRecieve = 0;
    }
@@ -428,34 +445,44 @@ void BackEnd::recieveSerialPort()
 
     for(int i=0;i<data.length();i++) {
         QByteArray *temp = new QByteArray(1,data[i]) ;
-        if( data[i] == '{' && flagRecieve == 0) {jsonPacketTimerCounter = 0;
+        if( data[i] == '{' && flagRecieve == 0  && flagStart == 10) {jsonPacketTimerCounter = 0;//qDebug() << "json start";
             flagRecieve++;recivedSerialPort.clear();recivedSerialPort.append(*temp);//qDebug() << "recieveSerialPort :" << recivedSerialPort;
-        } else if(data[i] == '{' && flagRecieve > 0) {
-            flagRecieve++;recivedSerialPort.append(*temp);//qDebug() << "recieveSerialPort :" << recivedSerialPort;
-        } else if(data[i] == '}' && flagRecieve == 1) {
-            flagRecieve--;recivedSerialPort.append(*temp);decodeJSON(recivedSerialPort);jsonPacketTimerCounter = 11;
-        } else if(data[i] == '}' && flagRecieve > 1) {
-            flagRecieve--;recivedSerialPort.append(*temp);//qDebug() << "recieveSerialPort :" << recivedSerialPort;
+        } else if(data[i] == '{' && flagRecieve > 0  && flagStart == 10) {
+            flagRecieve++;recivedSerialPort.append(*temp);//qDebug() << "flagRecieve :" << flagRecieve;
+        } else if(data[i] == '}' && flagRecieve == 1 && flagStart == 10) {
+            flagRecieve--;recivedSerialPort.append(*temp); jsonPacketTimerCounter = 11;decodeJSON(recivedSerialPort);//qDebug() << "flagRecieve :" << flagRecieve;//qDebug() << "jsonPacket time counter before:"<<jsonPacketTimerCounter;qDebug() << "jsonPacket time counter after:"<<jsonPacketTimerCounter;
+        } else if(data[i] == '}' && flagRecieve > 1 && flagStart == 10) {
+            flagRecieve--;recivedSerialPort.append(*temp);//qDebug() << "flagRecieve :" << flagRecieve;
         } else {
 //            uint8_t conv = data[i]; data[i] = 0xA5;
             if(data[i] == START_BYTE0 && flagStart == 0) {
-                flagStart++;
-                bufByte = new QByteArray(1,data[i]) ;
+                flagStart++;flagRecieve = 10;
+                bufByte = new QByteArray(1,data[i]) ;//qDebug() << "START_BYTE0 ";
             } else if(flagStart == 1) {
                 if(data[i] == START_BYTE1) {
-                    flagStart++;byteCounter = 0 ;
-                } else {flagStart--;recivedSerialPort.append(*bufByte);recivedSerialPort.append(*temp);}
+                    flagStart++;byteCounter = 0 ;//qDebug() << "START_BYTE1 ";
+                } else {flagStart--;recivedSerialPort.append(*bufByte);recivedSerialPort.append(*temp);qDebug() << "Not START_BYTE1 ";}
             } else if(flagStart == 2) {
-                if(byteCounter< 122) {
+                if(byteCounter< (packetLengh-4)) {
                  dataByte[byteCounter] = data[i];
+//                 qDebug() << "byteCounter: "<< byteCounter<< " : " <<data[i];;
                  byteCounter++;
                 } else {
                   byteCounter++;
-                  if(byteCounter == 124) {
-                      decodeByteArray();resetPacketSwitch();packetTimerCounter = 11 ;
+                  if(data[i] == STOP_BYTE0 && byteCounter == (packetLengh-3)){
+//                       qDebug() << "STOP_BYTE0: "<< byteCounter<< " : " <<data[i];;
+                  } else if(data[i] == STOP_BYTE1 && byteCounter == (packetLengh-2)){
+//                       qDebug() << "STOP_BYTE1: "<< byteCounter<< " : " <<data[i];;
+                       decodeByteArray();resetPacketSwitch();packetTimerCounter = 11 ;
+                  } else {
+//                      qDebug() << "not stop "<<byteCounter << " : " <<data[i];
                   }
+//                  if(byteCounter == 124) {
+//                  }
                 }
             } else {
+//                if(flagRecieve==10){qDebug() << "byteCounter "<<byteCounter<< " flagStart "<<flagStart;}
+//                if(byteCounter>10){qDebug() << "byteCounter "<<byteCounter<< " flagRecieve "<<flagRecieve<< " flagStart "<<flagStart;}
               recivedSerialPort.append(*temp);
             }
         }

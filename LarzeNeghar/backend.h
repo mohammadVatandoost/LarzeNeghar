@@ -56,8 +56,8 @@
 #define START_BYTE0 0xA5
 #define START_BYTE1 0x5A
 
-#define STOP_BYTE0   0x80
-#define STOP_BYTE1   0x90
+#define STOP_BYTE0   0x61
+#define STOP_BYTE1   0x62
 
 QT_CHARTS_USE_NAMESPACE
 

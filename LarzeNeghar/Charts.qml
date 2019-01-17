@@ -7,6 +7,7 @@ import QtQuick.Window 2.2
 import SensorModel 1.0
 import QtQuick.Controls 2.4
 
+
 Item {
     ScrollView
     {
@@ -289,6 +290,8 @@ Item {
             if(bordar === "x" && checked) {
                 var line = chartX.createSeries(ChartView.SeriesTypeLine, routerNumber+" , "+sensorNumber+" , "+bordar,
                                                axisXTime, axisXData);
+                line.useOpenGL = true;
+
                 lineSeriesList.push(line)
             }
         }
@@ -296,6 +299,8 @@ Item {
             if(bordar === "y" && checked) {
                 var line = chartY.createSeries(ChartView.SeriesTypeLine,routerNumber+" , "+sensorNumber+" , "+bordar,
                                                axisYTime, axisYData);
+                line.useOpenGL = true;
+
                 lineSeriesList.push(line)
             }
         }
@@ -303,6 +308,7 @@ Item {
             if(bordar === "z" && checked) {
                 var line = chartZ.createSeries(ChartView.SeriesTypeLine,routerNumber+" , "+sensorNumber+" , "+bordar,
                                                axisZTime, axisZData);
+                line.useOpenGL = true;
                 lineSeriesList.push(line)
             }
        }
@@ -321,6 +327,7 @@ Item {
                          scrollView.lineSeriesList = removeFromArray(scrollView.lineSeriesList,i)
                         for(var j=0;j<scrollView.lineSeriesList.length;j++) {
                            console.log(scrollView.lineSeriesList[j].name);
+
                         }
                     }
                 }
@@ -340,7 +347,7 @@ Item {
 
         Timer {
             id: refreshTimer
-            interval: 500//30 // 60 Hz
+            interval: 100//30 // 60 Hz
             running: true
             repeat: true
             onTriggered: {
