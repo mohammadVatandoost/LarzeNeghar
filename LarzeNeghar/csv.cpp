@@ -14,7 +14,7 @@ void appendDataToCSV(QVector<QStringList> dataList, QString fileDirection) {
                 {
                     stringList << dataList[row][column] ;
                 }
-                textStream << stringList.join( ';' )+"\n";
+                textStream << stringList.join( ',' )+"\n";
             }
             csvFile.close();
         }

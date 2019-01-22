@@ -8,7 +8,8 @@ SensorsList::SensorsList(QObject *parent) : QObject(parent)
     // timer for connection check
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(timerSlot()));
-    timer->start(2000);
+    timer->start(3000);
+    pastHour = QTime::currentTime().hour();
 }
 
 bool SensorsList::setSensorItem(int index, Sensor &sensor)
@@ -55,7 +56,7 @@ void SensorsList::addData(int min, int sec, int milSec, int routerNumber, int se
                   if(maxDataValue < minDataValue) { minDataValue = maxDataValue; }
                   maxDataValue = dataValue;
               } else if(dataValue < minDataValue) { minDataValue = dataValue ; }
-              double calculatedTime = getDateTimeToMSec()+(min*60*1000+sec*1000+milSec+(dataNumber*10));
+              double calculatedTime = getDateTimeToMSec(min)+(min*60*1000+sec*1000+milSec+(dataNumber*10));
               sensorItems[i].addData(calculatedTime, dataValue);
        }
     }
@@ -66,7 +67,7 @@ void SensorsList::addData(int min, int sec, int milSec, int routerNumber, int se
                 if(maxDataValue < minDataValue) { minDataValue = maxDataValue; }
                 maxDataValue = dataValue;
             } else if(dataValue < minDataValue) { minDataValue = dataValue ; }
-            newSensor.addData(getDateTimeToMSec()+(min*60*1000+sec*1000+milSec+dataNumber), dataValue);
+            newSensor.addData(getDateTimeToMSec(min)+(min*60*1000+sec*1000+milSec+dataNumber), dataValue);
         addSensor(newSensor);
     }
     // for scaling chart
@@ -136,37 +137,37 @@ int SensorsList::getSensorXmax()
 
 int SensorsList::getSensorYmin()
 {
-    if(sensorXmin < 0) {
-      return sensorYmin/zoomScaleY;
+    if(sensorYmin < 0) {
+      return (sensorYmin/zoomScaleY)+scrollYData;
     } else {
-        return sensorYmin*zoomScaleY;
+        return (sensorYmin*zoomScaleY)+scrollYData;
     }
 }
 
 int SensorsList::getSensorYmax()
 {
     if(sensorYmax < 0) {
-      return sensorYmax*zoomScaleY;
+      return (sensorYmax*zoomScaleY)+scrollYData;
     } else {
-        return sensorYmax/zoomScaleY;
+        return (sensorYmax/zoomScaleY)+scrollYData;
     }
 }
 
 int SensorsList::getSensorZmin()
 {
-    if(sensorXmin < 0) {
-      return sensorZmin/zoomScaleZ;
+    if(sensorZmin < 0) {
+      return (sensorZmin/zoomScaleZ)+scrollZData;
     } else {
-        return sensorZmin*zoomScaleZ;
+        return (sensorZmin*zoomScaleZ)+scrollZData;
     }
 }
 
 int SensorsList::getSensorZmax()
 {
     if(sensorZmax < 0) {
-      return sensorZmax*zoomScaleZ;
+      return (sensorZmax*zoomScaleZ)+scrollZData;
     } else {
-        return sensorZmax/zoomScaleZ;
+        return (sensorZmax/zoomScaleZ)+scrollZData;
     }
 }
 
@@ -194,6 +195,7 @@ void SensorsList::zoomMines(QString bordar)
 
 void SensorsList::scrollDataPlus(QString bordar)
 {
+    qDebug() << "scrollDataPlus:" << bordar;
     if(bordar == "x") {
       scrollXData = scrollXData + (changeScrollData); // /zoomScaleX not support float if you want, should change
     } else if(bordar == "y") {
@@ -205,6 +207,7 @@ void SensorsList::scrollDataPlus(QString bordar)
 
 void SensorsList::scrollDataMines(QString bordar)
 {
+    qDebug() << "scrollDataMines:" << bordar;
     if(bordar == "x") {
       scrollXData = scrollXData - (changeScrollData); // /zoomScaleX not support float if you want, should change
     } else if(bordar == "y") {
@@ -263,11 +266,25 @@ void SensorsList::changeMinMax(int minValue, int maxValue, QString bordar)
     }
 }
 
-double SensorsList::getDateTimeToMSec()
+double SensorsList::getDateTimeToMSec(int minute)
 {
     QDateTime temp = QDateTime::currentDateTime()  ;
 //    qDebug() << "QDateTime::currentDateTime() "<< temp.toString();
-    QTime tempTime(QTime::currentTime().hour(),0,0,0);
+    int hour = QTime::currentTime().hour();
+    if(pastHour != hour)
+    {
+
+        if(minute > 58) {
+            hour = pastHour;
+             qDebug() << "pastHour != hour hour = pastHour" ;
+        } else if(minute < 2) {
+            pastHour = hour;
+            qDebug() << "pastHour != hour pastHour = hour;" ;
+        } else {
+          qDebug() << "pastHour != hour ";
+        }
+    }
+    QTime tempTime(hour,0,0,0);
 //    qDebug() << "QTime "<< tempTime.toString("hh:mm:ss:zzz");
  //   tempTime.
     temp.setTime(tempTime);
@@ -278,8 +295,11 @@ double SensorsList::getDateTimeToMSec()
 
 void SensorsList::timerSlot()
 {
+//    qDebug() << "sensorsList:" << sensorItems.length() << " , " << sensorsListCSVCounter.length() ;
+    if(sensorItems.length() == sensorsListCSVCounter.length()) {
     for(int i=0;i<sensorItems.length();i++) {
-        if( (sensorItems[i].data.length() - (sensorsListCSVCounter[i]*1000)) > 0) {
+//        qDebug() << "sensorItems[i].data.length():" << sensorItems[i].data.length() << " , sensorsListCSVCounter[i]*1000) : " << sensorsListCSVCounter[i]*1000 ;
+        if( (sensorItems[i].data.length() - ((sensorsListCSVCounter[i]+1)*1000)) > 0) {
             QVector<QStringList> dataList;
             int startStep = sensorsListCSVCounter[i]*1000;
             int stopStep = startStep + 1000;
@@ -291,8 +311,9 @@ void SensorsList::timerSlot()
             }
             sensorsListCSVCounter[i]++;
             appendDataToCSV(dataList, "./Data/"+QString::number(sensorItems[i].sensorNumber)+sensorItems[i].bordar+".csv");
-            qDebug() << "stored to csv:" << sensorItems[i].sensorNumber;
+//            qDebug() << "stored to csv:" << sensorItems[i].sensorNumber;
         }
+     }
     }
 }
 

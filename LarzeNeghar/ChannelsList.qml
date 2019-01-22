@@ -300,9 +300,31 @@ Item {
         }
 
         Button {
+            id: applyButton
             text: qsTr("Apply")
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: listView.bottom
+            onClicked: {
+               console.log("Apply");
+                BackEnd.sendSettings();
+            }
+            palette {
+                    button: "#5cb85c"
+            }
+        }
+
+        ComboBox {
+            id: comox
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: applyButton.bottom
+            width: 200
+            model: [ "Banana", "Apple", "Coconut" ]
+        }
+
+        Button {
+            text: qsTr("Connect")
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: comox.bottom
             onClicked: {
                console.log("Apply");
                 BackEnd.sendSettings();

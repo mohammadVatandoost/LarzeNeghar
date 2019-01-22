@@ -64,8 +64,9 @@ public:
     int changeScrollData = 1;
     int changeScrollTime = 1000;
     QTimer *timer;
-    double getDateTimeToMSec();
+    double getDateTimeToMSec(int minute);
     QList<int> sensorsListCSVCounter;
+    int pastHour;
 public slots:
     void timerSlot();
 signals:

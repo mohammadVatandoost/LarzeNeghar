@@ -14,7 +14,7 @@ BackEnd::BackEnd(QObject *parent) : QObject(parent)
 
     serial = new QSerialPort(this);
     serial->close();
-    serial->setBaudRate(QSerialPort::Baud115200);
+    serial->setBaudRate(256000);
     serial->setDataBits(QSerialPort::Data8);
     serial->setParity(QSerialPort::NoParity);
     serial->setStopBits(QSerialPort::OneStop);
@@ -138,7 +138,7 @@ void BackEnd::sendSettings()
 }
 
 void BackEnd::decodeJSON(QString message) {
-    qDebug().noquote() << "decodeJSON :" << message;
+//    qDebug().noquote() << "decodeJSON :" << message;
     QJsonDocument qJsonDocument = QJsonDocument::fromJson(message.toUtf8());
     QJsonObject qJsonObject = qJsonDocument.object();
      // {"RUN":"0","Msc":"0","SEC":"1","SN":"2","SDN":"10","RPL":"126","DCS":"70"}
@@ -149,8 +149,8 @@ void BackEnd::decodeJSON(QString message) {
         sensorQuantity = qJsonObject.value(Sensor_Num).toString().toInt();
         SensorDataSize = qJsonObject.value(Sensor_Data_Num).toString().toInt() * 6;
         updateTime();
-        routerMinute = minute.toInt();
-//        qDebug() << "minute" << minute << "second" << second << "miliSecond" << miliSecond ;
+        routerMinute = qJsonObject.value(Router_minute).toString().toInt();
+//        qDebug() << "minute" << minute << "routerMinute" << routerMinute  ;
         routerSecnd = qJsonObject.value(Router_second).toString().toInt();
         routerMiliSec = qJsonObject.value(Router_milisec).toString().toInt();
         checkSum = qJsonObject.value(Data_Check_SUM).toString().toInt();
@@ -173,6 +173,9 @@ void BackEnd::decodeJSON(QString message) {
        }
     } else if(qJsonObject.contains(ACK)) {
         qDebug() << "decodeJSON : ACK";
+    } else if(qJsonObject.contains(Sensors_settings)) {
+         qDebug() << "decodeJSON : request time";
+          sendInitialize();
     } else if(qJsonObject.contains(Sensors_Frequency_Parameters)) {
         // {"SFP":[{"SUN":"1","SBFL":"0","SBFH":"50","SSR":"200"},{"SUN":"2","SBFL":"20","SBFH":"60","SSR":"200"}]}
         qDebug() << "decodeJSON : has Sensors Sensors_Frequency_Parameters";
@@ -255,39 +258,52 @@ void BackEnd::decodeByteArray()
 //             <<((uint8_t)dataByte[12])<<","<<((uint8_t)dataByte[13])<<",";
 //    qDebug() << "length :"<< dataByte.length() << "checkSum :"<< (sum%256) << " my checkSum:"<< sum;
     if((sum%256) == checkSum) {
+//        for(int i =0; i<dataByte.length();i++) {
+//            qDebug() <<i<< " : " <<((uint8_t)dataByte[0]) ;
+//        }
     uint8_t sensorNumber[sensorQuantity];
+//    qDebug().noquote() << " passMinute:" << passMinute << " CurrentMinute:" << routerMinute << "sec" << routerSecnd;
+//    if(passMinute != routerMinute) {
+//        if(routerSecnd > 55) {
+//           routerMinute = passMinute ;
+//           qDebug().noquote() << "change routerMinute";
+//        } else if(routerSecnd < 2) {
+//          passMinute = routerMinute ;qDebug().noquote() << "change passMinute";
+//        }
+//    } else {
+////        passMinute = routerMinute ;qDebug().noquote() << " passMinute == routerMinutechange passMinute";
+//    }
      for(int i =0; i<dataByte.length();i++) {
-       if( ( i%(SensorDataSize+1) ) != 0) {
-//           qDebug().noquote() << " passMinute:" << passMinute << " CurrentMinute:" << routerMinute << "sec" << routerSecnd;
-           if(passMinute != routerMinute) {
-               if(routerSecnd > 57) {
-                  routerMinute = passMinute ;
-               }
-           } else {passMinute = routerMinute ;}
-
+       if( ( i%(SensorDataSize+1) ) != 0 ) {
            // 6 forward step data is constant
 //            int xData = dataByte[i] + (dataByte[i+1]*256) ; i++;i++;
             int xData = ((dataByte[i] & 0xff) | (dataByte[i + 1] << 8));
-            qDebug()<<"xData: " <<i<<":" <<sensorNumber[i / (SensorDataSize+1)]<<","<<((uint8_t)dataByte[i])<<","<<((uint8_t)dataByte[i+1])<<","<< xData;
+//            qDebug()<<"xData: " <<i<<":" <<sensorNumber[i / (SensorDataSize+1)]<<","<<((uint8_t)dataByte[i])<<","<<((uint8_t)dataByte[i+1])<<","<< xData;
             i++;i++;
             //qDebug()<<xData;
 //            qDebug().noquote() << "decodeByteArray x" << i << "," << (i / (SensorDataSize+1))<< "," << ((i%(SensorDataSize+1))-1)/6;
-            mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, sensorNumber[i / (SensorDataSize+1)], "x", xData, (i%(SensorDataSize+1))/6);
+            if(sensorNumber[i / (SensorDataSize+1)] != 0){
+             mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, sensorNumber[i / (SensorDataSize+1)], "x", xData, (i%(SensorDataSize+1))/6);
+            }
 //            int yData = dataByte[i] + (dataByte[i+1]*256) ; i++;i++;
 //            int yData = dataByte[i] | dataByte[i+1] << 8 ;
             int yData = ((dataByte[i] & 0xff) | (dataByte[i + 1] << 8));
 //            qDebug()<<"yData: " <<((uint8_t)dataByte[i])<<","<<((uint8_t)dataByte[i+1])<<","<< yData;
             i++;i++;
 //            qDebug().noquote() << "decodeByteArray y " << i << "," << (i / (SensorDataSize+1))<< "," << ((i%(SensorDataSize+1))-1)/6;
-            mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, sensorNumber[i / (SensorDataSize+1)], "y", yData, (i%(SensorDataSize+1))/6);
+            if(sensorNumber[i / (SensorDataSize+1)] != 0){
+              mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, sensorNumber[i / (SensorDataSize+1)], "y", yData, (i%(SensorDataSize+1))/6);
+            }
 //            int zData = dataByte[i] + (dataByte[i+1]*256) ; i++; // next i++ happen in for
             int zData = ((dataByte[i] & 0xff) | (dataByte[i + 1] << 8)); i++;
+            if(sensorNumber[i / (SensorDataSize+1)] != 0){
+                mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, sensorNumber[i / (SensorDataSize+1)], "z", zData, (i%(SensorDataSize+1))/6);
+            }
             //qDebug()<<zData;
-
 //            qDebug().noquote() << "decodeByteArray z" << i << "," << (i / (SensorDataSize+1))<< "," << ((i%(SensorDataSize+1))-1)/6;
-            mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, sensorNumber[i / (SensorDataSize+1)], "z", zData, (i%(SensorDataSize+1))/6);
        } else {
          sensorNumber[i / (SensorDataSize+1)] =  dataByte[i];
+//         qDebug().noquote() << "routerNumber: " << routerNum <<","<<i <<  " : " << ((uint8_t)dataByte[i]);
        }
      }
     } else {
@@ -351,9 +367,13 @@ void BackEnd::updateChart(QAbstractSeries *chartSeries)
                     axisXTime->setMin(QDateTime::fromMSecsSinceEpoch( minXtime ) );
                     axisXTime->setMax(QDateTime::fromMSecsSinceEpoch( maxXtime ) );
                 } else if(sensors[i].bordar == "y") {
+//                    double minXtime = mList->getLastDataTime("x")-(30*1000/mList->zoomScaleX)+mList->scrollXTime;
+//                    double maxXtime = mList->getLastDataTime("x")+(30*1000/mList->zoomScaleX)+mList->scrollXTime;
                     axisYTime->setMin(QDateTime::fromMSecsSinceEpoch( mList->getLastDataTime("y")-(30*1000) ) );
                     axisYTime->setMax(QDateTime::fromMSecsSinceEpoch( mList->getLastDataTime("y")+(30*1000) ) );
                 } else if(sensors[i].bordar == "z") {
+//                    double minXtime = mList->getLastDataTime("x")-(30*1000/mList->zoomScaleX)+mList->scrollXTime;
+//                    double maxXtime = mList->getLastDataTime("x")+(30*1000/mList->zoomScaleX)+mList->scrollXTime;
                     axisZTime->setMin(QDateTime::fromMSecsSinceEpoch( mList->getLastDataTime("z")-(30*1000) ) );
                     axisZTime->setMax(QDateTime::fromMSecsSinceEpoch( mList->getLastDataTime("z")+(30*1000) ) );
                 }
@@ -409,9 +429,9 @@ void BackEnd::timerSlot()
    }
    timerCounter++;
    if(timerCounter == 30) {updateTime();timerCounter = 0;}
-   if(timerCounter2 == 1) {sendInitialize();}
+//   if(timerCounter2 == 1) {sendInitialize();}
    timerCounter2++;
-   if(timerCounter2 == 200) {sendInitialize();timerCounter2 = 2;}
+//   if(timerCounter2 == 200) {sendInitialize();timerCounter2 = 2;}
 //   qDebug() << "mList length :" << mList->items().length();
 //   mList->addData(1, 1, 2, 1, 2, "z", "1234");
    //   sendInitialize();
@@ -465,12 +485,13 @@ void BackEnd::recieveSerialPort()
             } else if(flagStart == 2) {
                 if(byteCounter< (packetLengh-4)) {
                  dataByte[byteCounter] = data[i];
-//                 qDebug() << "byteCounter: "<< byteCounter<< " : " <<data[i];;
+//                 qDebug() << "byteCounter: "<< byteCounter<< " : " <<((uint8_t)data[i]);
                  byteCounter++;
                 } else {
                   byteCounter++;
                   if(data[i] == STOP_BYTE0 && byteCounter == (packetLengh-3)){
 //                       qDebug() << "STOP_BYTE0: "<< byteCounter<< " : " <<data[i];;
+//                      decodeByteArray();resetPacketSwitch();packetTimerCounter = 11 ;
                   } else if(data[i] == STOP_BYTE1 && byteCounter == (packetLengh-2)){
 //                       qDebug() << "STOP_BYTE1: "<< byteCounter<< " : " <<data[i];;
                        decodeByteArray();resetPacketSwitch();packetTimerCounter = 11 ;
@@ -486,7 +507,7 @@ void BackEnd::recieveSerialPort()
               recivedSerialPort.append(*temp);
             }
         }
-//       qDebug() << " :" << data[i];
+//       qDebug() << i<<" :" << data[i];
     }
 //    recivedSerialPort.append(temp);
 //   qDebug() << "recieveSerialPort :" << QString::fromStdString(data.toStdString());
