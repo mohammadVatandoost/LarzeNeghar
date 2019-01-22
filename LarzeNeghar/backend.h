@@ -72,6 +72,8 @@ public:
     Q_INVOKABLE QList<int> getSenorsY(QString routerNumber, QString sensorNumber, QString bordar);
     Q_INVOKABLE void test();
     Q_INVOKABLE void sendSettings();
+    Q_INVOKABLE void connectSerialPort(QString portName);
+    Q_INVOKABLE static QVariant availablePorts() ;
     QSerialPort *serial;
     QString come_port;
     QTimer *timer, *packetTimer;

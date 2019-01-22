@@ -137,6 +137,33 @@ void BackEnd::sendSettings()
     sendSerial(strJson);
 }
 
+void BackEnd::connectSerialPort(QString portName)
+{
+    if(!serial->isOpen()) {
+        serial->setPortName(portName);
+        if(serial->open(QIODevice::ReadWrite)) {
+          connectState = true; qDebug() << " conndected : ";
+          connect(serial, SIGNAL(readyRead()), SLOT(recieveSerialPort()));
+          sendInitialize();sendInitialize();sendInitialize();sendInitialize();sendInitialize();
+          updateTime();
+          passMinute = minute.toInt();
+        } else {
+            connectState = false; qDebug() << "Not conndected : ";
+            serial->close();
+        }
+    }
+}
+
+QVariant BackEnd::availablePorts()
+{
+    QList<QSerialPortInfo> portsAvailable = QSerialPortInfo::availablePorts();
+    QStringList names_PortsAvailable;
+    for(const QSerialPortInfo& portInfo : portsAvailable) {
+        names_PortsAvailable<<portInfo.portName();
+     }
+    return QVariant::fromValue(names_PortsAvailable);
+}
+
 void BackEnd::decodeJSON(QString message) {
 //    qDebug().noquote() << "decodeJSON :" << message;
     QJsonDocument qJsonDocument = QJsonDocument::fromJson(message.toUtf8());
@@ -411,10 +438,10 @@ void BackEnd::timerSlot()
                    serial->setPortName(port.portName());
                    qDebug() << " portName : " << port.portName();
         }
-        serial->setPortName("COM11");
+//        serial->setPortName("COM11");
         if(serial->open(QIODevice::ReadWrite)) {
           connectState = true; qDebug() << " conndected : ";
-          connect(serial, SIGNAL(readyRead()), SLOT(recieveSerialPort()));
+          connect(serial, SIGNAL(readyRead()), this, SLOT(recieveSerialPort()));
           sendInitialize();sendInitialize();sendInitialize();sendInitialize();sendInitialize();
           updateTime();
           passMinute = minute.toInt();

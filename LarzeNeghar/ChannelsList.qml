@@ -21,7 +21,7 @@ Item {
         }
         ListView {
             implicitWidth: monitoringTab.width
-            implicitHeight: 500
+            implicitHeight: 600
             Layout.fillWidth: false
             clip: true
             id: listView
@@ -312,25 +312,31 @@ Item {
                     button: "#5cb85c"
             }
         }
-
-        ComboBox {
-            id: comox
+        RowLayout {
+            anchors.topMargin: 10
+            spacing: 5
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: applyButton.bottom
+          ComboBox {
+            id: comox
+//            anchors.horizontalCenter: parent.horizontalCenter
+//            anchors.top: applyButton.bottom
             width: 200
-            model: [ "Banana", "Apple", "Coconut" ]
-        }
+            model: BackEnd.availablePorts()
+          }
 
-        Button {
+          Button {
             text: qsTr("Connect")
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: comox.bottom
+//            anchors.horizontalCenter: parent.horizontalCenter
+//            anchors.top: comox.bottom
             onClicked: {
-               console.log("Apply");
-                BackEnd.sendSettings();
+               console.log("Connect");
+                console.log(comox.currentText);
+                BackEnd.connectSerialPort(comox.currentText);
             }
             palette {
                     button: "#5cb85c"
             }
+          }
         }
 }

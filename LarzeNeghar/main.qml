@@ -8,7 +8,7 @@ import QtCharts 2.0
 Window {
     visible: true
     width: 1800
-    height: 760
+    height: 860
     title: qsTr("Hello World")
     TabView {
         anchors.fill: parent
