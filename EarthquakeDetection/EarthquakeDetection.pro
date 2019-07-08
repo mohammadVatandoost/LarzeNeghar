@@ -1,10 +1,11 @@
-QT += quick
+QT -= gui
 QT += serialport
 QT += sql
-QT += qml
-QT += charts
-QT += opengl
-CONFIG += c++11
+QT += widgets
+QT += network
+
+CONFIG += c++11 console
+CONFIG -= app_bundle
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked deprecated (the exact warnings
@@ -19,19 +20,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-    sensor.cpp \
     sensorslist.cpp \
-    sensormodel.cpp \
+    csv.cpp \
+    sensor.cpp \
     backend.cpp \
-    csv.cpp
-
-RESOURCES += qml.qrc
-
-# Additional import path used to resolve QML modules in Qt Creator's code model
-QML_IMPORT_PATH =
-
-# Additional import path used to resolve QML modules just for Qt Quick Designer
-QML_DESIGNER_IMPORT_PATH =
+    algorithm.cpp \
+    sensordata.cpp \
+    Biquad.cpp \
+    Butterworth.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -39,10 +35,12 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    sensor.h \
     sensorslist.h \
-    sensormodel.h \
+    csv.h \
+    sensor.h \
     backend.h \
-    csv.h
-
-DISTFILES +=
+    packetsdefine.h \
+    algorithm.h \
+    sensordata.h \
+    Biquad.h \
+    Butterworth.h

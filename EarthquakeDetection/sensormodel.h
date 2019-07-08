@@ -11,14 +11,15 @@ class SensorModel : public QAbstractListModel
 public:
     explicit SensorModel(QObject *parent = nullptr);
     enum {
-      ChannelNumberRole, RouterNumberRole, SensorNumberRole, BordarRole, DescriptionRole,
-      BatteryLevelRole, SampleRateRole, BandpassFilterRole, SensorDataRole,
-      SavingOnLocalRole, SavingOnWebRole, SendingToWebRole, StoryRole, SensorTypeRole, DataRole
+        ChannelNumberRole, RouterNumberRole, SensorNumberRole, BordarRole, DescriptionRole, RouterBatteryLevelRole,
+        BatteryLevelRole, SampleRateRole, BandpassFilterRole, SensorDataRole,
+        SavingOnLocalRole, SavingOnWebRole, SendingToWebRole, StoryRole, SensorTypeRole, DataRole
     };
+
     // Header: int routerNumber = 123;
-//    int sensorNumber = 345;
-//    QString bordar = "x";
-//    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    //    int sensorNumber = 345;
+    //    QString bordar = "x";
+    //    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     // Basic functionality:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -38,6 +39,10 @@ public:
     void setList(SensorsList *list);
 private:
     SensorsList *mList;
+
+public slots:
+    void myBatteryUpdate();
+    void myApplyUpdate();
 };
 
 #endif // SENSORMODEL_H
