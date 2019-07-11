@@ -18,6 +18,7 @@
 #define Router_minute "MIN"
 #define Router_milisec "Msc"
 #define Router_Battery_Level "RBL"
+#define Sensor_Offset "SOffset"
 
 #define Sensor_Data_X "SDX"
 #define Sensor_Data_Y "SDY"

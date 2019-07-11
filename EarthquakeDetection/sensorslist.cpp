@@ -18,6 +18,9 @@ SensorsList::SensorsList(QObject *parent) : QObject(parent)
 //    timerChangeCSV->start(EachFilePeriodinMS);
 
     pastHour = QTime::currentTime().hour();
+    if(jsonFileAPI.loadFile()) {
+        qJsonArray = jsonFileAPI.getSensorsData();
+    }
 }
 
 bool SensorsList::setSensorItem(int index, Sensor &sensor)
@@ -94,6 +97,23 @@ void SensorsList::addData(int min, int sec, int milSec, int routerNumber, int se
     if(isNewSensor) {
         // is new sensor
         Sensor newSensor(sensorItems.length()+1, routerNumber, sensorNumber, sensorBordar);
+        bool flag = true;
+        for(int i=0; i< qJsonArray.size();i++) {
+           QJsonObject tempQJSONObject = qJsonArray.at(i).toObject();
+           if( (tempQJSONObject.value(Router_Unit_Number).toInt() == routerNumber) &&
+                   (tempQJSONObject.value(Sensor_Num).toInt() == sensorNumber) &&
+                   (tempQJSONObject.value(Sensor_Type).toString() == sensorBordar)) {
+               newSensor.offset = tempQJSONObject.value(Sensor_Offset).toInt();
+               flag = false;
+           }
+        }
+        if(flag) {
+            QJsonObject tempQJSONObject; tempQJSONObject.insert(Router_Unit_Number, routerNumber);
+            tempQJSONObject.insert(Sensor_Unit_Number, sensorNumber);
+            tempQJSONObject.insert(Sensor_Type, sensorBordar);
+            tempQJSONObject.insert(Sensor_Offset, 0);
+            qJsonArray.push_front(tempQJSONObject);
+        }
         if( dataValue > maxDataValue ) {
             if(maxDataValue < minDataValue) { minDataValue = maxDataValue; }
             maxDataValue = dataValue;

@@ -15,6 +15,7 @@
 #include <QTcpSocket>
 #include <packetsdefine.h>
 #include <QJsonObject>
+#include "jsonfileapi.h"
 
 const int MaximumNumberOfFiles  =  100; //if Number of csv files is more than MaximumNumberOfFiles we have to remove erlieast files
 const int EachFilePeriodinMS=1000*60*30; // after this MiliSeconds we will close the csv file and store the rest in another file
@@ -119,6 +120,8 @@ public:
     void setTCPSocket(QTcpSocket *temp);
     void sendNewSensor(Sensor temp);
     bool checkIsNewSensor(int routerNumberTemp, int sensorNumberTemp);
+    JSONFileAPI jsonFileAPI;
+    QJsonArray qJsonArray;
 public slots:
     void timerSlot();
     void changeCSVFilesName();

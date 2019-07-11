@@ -65,6 +65,7 @@ public:
     void stopTest();
     int min = 0;
     int max = 0;
+    int offset = 0;
 
 };
 

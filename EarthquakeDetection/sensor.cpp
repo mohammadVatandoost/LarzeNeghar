@@ -75,7 +75,7 @@ void Sensor::addData(double time, double value)
 void Sensor::addData(int year, int month, int day, int hour, int minute, int second, int miliSecond, double value)
 {
 
-    SensorData temp(minute, second, miliSecond, value);
+    SensorData temp(minute, second, miliSecond, value-offset);
     if(year == 0) {yearBuff = year; monthBuff = month; dayBuff = day; hourBuff = hour; minuteBuff = minute;}
     if( (hourBuff != hour) && (savingOnLocal) && (isConnected) ) {
         qDebug()<< "storing to file add data hourBuff:"<< hourBuff << " , "<< hour ;
