@@ -231,10 +231,11 @@ int SensorsList::getSensorLoss(int router_num, int sensor_num, int sensorLossTem
         if( (sensorItems[i].routerNumber == router_num) && (sensorItems[i].sensorNumber == sensor_num) && (sensorItems[i].bordar == "x")) {
             sensorItems[i].addSensorLoss(sensorLossTemp);
             int temp = sensorItems[i].getSensorLossAverage();
-            if(temp>7) {sensorItems[i].isConnected = false;}
+            if(temp>7) {sensorItems[i].isConnected = false;} else {sensorItems[i].isConnected = true;}
             return temp;
         }
     }
+    return 0;
 }
 
 float SensorsList::getSensorXmin()

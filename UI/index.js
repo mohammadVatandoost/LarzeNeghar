@@ -81,7 +81,7 @@ console.log('Server listening on ' + HOST +':'+ PORT);
       // in an array if your app supports multi windows, this is the time
       // when you should delete the corresponding element.
       //   serverSocket.close();
-      serverSocket.close();
+      // serverSocket.close();
       win = null;
       db.dataBase.close((err) => {
           if (err) {
@@ -121,14 +121,18 @@ ipc.on('eewConfig', function(event,arg) {
   var temp = arg ;
   temp[packetsCode.packetType] = packetsCode.eewConfigType ;
   console.log("eewConfig : " + arg);
-  serverSocket.write(temp+"***");
+    if(serverSocket !== null) {
+        serverSocket.write(temp + "***");
+    }
 });
 
 // get charts
 ipc.on('chartsApply', function(event,arg) {
   console.log("chartsApply");
   console.log(arg+"***");
-  serverSocket.write(arg+"***");
+    if(serverSocket !== null) {
+        serverSocket.write(arg + "***");
+    }
 });
 
 //  run tests
@@ -136,7 +140,9 @@ ipc.on('runTest', function(event,arg) {
   var temp = {};
   temp[packetsCode.packetType] = packetsCode.runTestType;
   console.log("runTest : "+JSON.stringify(temp)+"***");
-  serverSocket.write(JSON.stringify(temp)+"***");
+    if(serverSocket !== null) {
+        serverSocket.write(JSON.stringify(temp) + "***");
+    }
 });
 
 // stop tests
@@ -144,7 +150,9 @@ ipc.on('stopTest', function(event,arg) {
     var temp = {};
     temp[packetsCode.packetType] = packetsCode.stopTestType;
     console.log("stopTest : "+JSON.stringify(temp)+"***");
-    serverSocket.write(JSON.stringify(temp)+"***");
+    if(serverSocket !== null) {
+        serverSocket.write(JSON.stringify(temp) + "***");
+    }
 });
 
 // release alarm
@@ -152,7 +160,9 @@ ipc.on('releaseAlarm', function(event,arg) {
     var temp = {};
     temp[packetsCode.packetType] = packetsCode.releaseAlarmType;
     console.log("releaseAlarm : "+JSON.stringify(temp)+"***");
-    serverSocket.write(JSON.stringify(temp)+"***");
+    if(serverSocket !== null) {
+        serverSocket.write(JSON.stringify(temp) + "***");
+    }
 });
 
 // stop alarm
@@ -160,7 +170,9 @@ ipc.on('stopAlarm', function(event,arg) {
     var temp = {};
     temp[packetsCode.packetType] = packetsCode.stopAlarmType;
     console.log("stopAlarm : "+JSON.stringify(temp)+"***");
-    serverSocket.write(JSON.stringify(temp)+"***");
+    if(serverSocket !== null) {
+        serverSocket.write(JSON.stringify(temp) + "***");
+    }
 });
 
 // save sensor info
@@ -173,7 +185,9 @@ ipc.on('saveSensorInfo', function(event,arg) {
      console.log(sensorsInfo[i].router_number +" , "+sensorsInfo[i].sensor_number+','+sensorsInfo[i].low_pass+','+sensorsInfo[i].high_pass+" : 1 , "+sensorsInfo[i].saving_local);
   } 
   temp[packetsCode.packetType] = packetsCode.sensorsInfo;
-  serverSocket.write(JSON.stringify(temp)+"***");
+    if(serverSocket !== null) {
+        serverSocket.write(JSON.stringify(temp) + "***");
+    }
 });
 
 // socket packet controller
@@ -192,7 +206,9 @@ function decodeSocketPacket(data) {
         
       } else if(dataTemp.packetType === packetsCode.receiveChartDataType) {
         console.log("receiveChartDataType");console.log(packets[i]);
-        win.webContents.send('sensor-data', packets[i]);
+          if(win.webContents !== null) {
+              win.webContents.send('sensor-data', packets[i]);
+          }
       } else if(dataTemp.packetType === packetsCode.newSensorPacket) {
        // delete data.packetType;
        console.log("newSensor packet");
@@ -218,14 +234,20 @@ function decodeSocketPacket(data) {
                console.log("sensorInfo from dataBase : " + JSON.stringify(row));
                var tcpSocketData = JSON.stringify(sendData) + "***";
                console.log(tcpSocketData);
-               serverSocket.write(tcpSocketData);
-               win.webContents.send('new-sensor', JSON.stringify(row));
+               if(serverSocket !== null) {
+                   serverSocket.write(tcpSocketData);
+               }
+               if(win.webContents !== null) {
+                   win.webContents.send('new-sensor', JSON.stringify(row));
+               }
            } else {
                console.log('sensor does not exist');
                sensors.push(sensorData);
                db.insertNewSensor(sensorData.router_number, sensorData.sensor_number, '15', '0.1');
-               console.log("newSensorInfo : " + JSON.stringify(sensorData))
-               win.webContents.send('new-sensor', JSON.stringify(sensorData));
+               console.log("newSensorInfo : " + JSON.stringify(sensorData));
+               if(win.webContents !== null) {
+                   win.webContents.send('new-sensor', JSON.stringify(sensorData));
+               }
            }
         }).catch((err) => {
                console.log(err.message);
@@ -234,11 +256,19 @@ function decodeSocketPacket(data) {
       } else if(dataTemp.packetType === packetsCode.connectionStateType) {
           console.log("connectionStateType");
           if(dataTemp.connectionState === packetsCode.connected) {
-              win.webContents.send('connected');
-          } else {win.webContents.send('disconnected');}
+              if(win.webContents !== null) {
+                  win.webContents.send('connected');
+              }
+          } else {
+              if(win.webContents !== null) {
+                  win.webContents.send('disconnected');
+              }
+          }
       } else if(dataTemp.packetType === packetsCode.sensorsInfoType) {
           console.log("sensorsInfoType");
-          win.webContents.send( 'update-battery-signal', packets[i] );
+          if(win.webContents !== null) {
+              win.webContents.send('update-battery-signal', packets[i]);
+          }
       }
      } 
   }
