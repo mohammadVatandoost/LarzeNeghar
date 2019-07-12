@@ -980,6 +980,8 @@ void BackEnd::readTcpData()
             sendAlarmOn();
         } else if(qJsonObject.value(packetType) == stopAlarmType) {
             sendAlarmOff();
+        } else if(qJsonObject.value(packetType) == colibrateType) {
+            mList->colibrate();
         } else if(qJsonObject.value(packetType) == sensorsInfo) {
            QJsonArray sensorsInfoArray = qJsonObject.value("sensorsInfo").toArray();
            for(int i=0; i< sensorsInfoArray.size();i++) {

@@ -41,6 +41,7 @@ public:
     void addSensorInfoToCSV(Sensor newSensor);
     void runTest();
     void stopTest();
+    void colibrate();
     int getSensorLoss(int router_num, int sensor_num, int sensorLossTemp);
     Q_INVOKABLE float getSensorXmin();
     Q_INVOKABLE float getSensorXmax();

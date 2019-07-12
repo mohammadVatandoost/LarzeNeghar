@@ -245,6 +245,14 @@ void SensorsList::stopTest()
     }
 }
 
+void SensorsList::colibrate()
+{
+    for(int i=0; i<sensorItems.length(); i++) {
+        sensorItems[i].sum = 0;
+        sensorItems[i].counter = 0;
+    }
+}
+
 int SensorsList::getSensorLoss(int router_num, int sensor_num, int sensorLossTemp)
 {
     for(int i=0; i<sensorItems.length(); i++) {

@@ -20,7 +20,9 @@ var packetsCode = {
     antenSignal: 'antenSignal',
 	Router_Battery_Level: "RBL",
 	Sensor_Battery_Level: "SBL",
-	sensorsInfoType: "sensorsInfoType"
+	sensorsInfoType: "sensorsInfoType",
+	onRoof: "onRoof",
+    onGround: "onGround"
 } 
 
 // connection state

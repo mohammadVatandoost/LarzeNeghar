@@ -74,7 +74,15 @@ void Sensor::addData(double time, double value)
 
 void Sensor::addData(int year, int month, int day, int hour, int minute, int second, int miliSecond, double value)
 {
-
+    // calculate offset
+    if(counter < average_number) {
+        sum = sum + value ;
+        counter++;
+    }
+    if(counter == average_number) {
+        offset = sum / average_number ;
+        counter++;
+    }
     SensorData temp(minute, second, miliSecond, value-offset);
     if(year == 0) {yearBuff = year; monthBuff = month; dayBuff = day; hourBuff = hour; minuteBuff = minute;}
     if( (hourBuff != hour) && (savingOnLocal) && (isConnected) ) {
@@ -97,8 +105,15 @@ void Sensor::addData(int year, int month, int day, int hour, int minute, int sec
     if(runTest) {
         testDataList.append(temp);
     }
+    // for algorithm
     dataBuffer.append(temp);
     while(dataBuffer.length() > dataBufferCounterLimit) {dataBuffer.remove(0);}
+//    algorithmRunCounter++;
+//    if(algorithmRunCounter == 10) {
+//        algorithmRunCounter = 0 ;
+        // run algorithm
+//    }
+    // refresh buffer
     yearBuff = year; monthBuff = month; dayBuff = day; hourBuff = hour; minuteBuff = minute;
 }
 

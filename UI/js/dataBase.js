@@ -6,7 +6,7 @@ var db = new sqlite3.Database('./dataBase.db', (err) => {
     }
     console.log('Connected to the Sensors database.');
     // create sensors data base
-    db.run('CREATE TABLE IF NOT EXISTS Sensors (id INTEGER PRIMARY KEY AUTOINCREMENT, router_number INTEGER NOT NULL, sensor_number INTEGER NOT NULL, discreption TEXT DEFAULT "", low_pass TEXT NOT NULL, high_pass TEXT NOT NULL, saving_local INTEGER DEFAULT 0, saving_web INTEGER DEFAULT 0 )');
+    db.run('CREATE TABLE IF NOT EXISTS Sensors (id INTEGER PRIMARY KEY AUTOINCREMENT, router_number INTEGER NOT NULL, sensor_number INTEGER NOT NULL, discreption TEXT DEFAULT "", low_pass TEXT NOT NULL, high_pass TEXT NOT NULL, saving_local INTEGER DEFAULT 0, saving_web INTEGER DEFAULT 0, onRoof INTEGER DEFAULT 0, onGround INTEGER DEFAULT 0  )');
     // create sensors data
     // db.run('CREATE TABLE IF NOT EXISTS SensorsData (id INTEGER PRIMARY KEY AUTOINCREMENT, router_number INTEGER NOT NULL, sensor_number INTEGER NOT NULL, discreption TEXT, saving_local INTEGER DEFAULT 0, saving_web INTEGER DEFAULT 0 )');
     // create Earthquake table

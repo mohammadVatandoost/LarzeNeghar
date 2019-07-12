@@ -21,9 +21,22 @@ ipc.on('new-sensor',function(event,arg) {
 	// console.log("new-sensor");console.log(arg);
 	arg = JSON.parse(arg);
 	sensorsList.push(arg);
-	$( "#chart1Option" ).after( "<option>R"+arg.router_number+",S"+arg.sensor_number+"</option>" );
-	$( "#chart2Option" ).after( "<option>R"+arg.router_number+",S"+arg.sensor_number+"</option>" );
-	$( "#chart3Option" ).after( "<option>R"+arg.router_number+",S"+arg.sensor_number+"</option>" );
+	if(arg.discreption === "") {
+        $( "#chart1Option" ).after( `<option value="+R"+arg.router_number+",S"+arg.sensor_number+">R"+arg.router_number+",S"+arg.sensor_number+"</option>` );
+        $( "#chart2Option" ).after( "<option>R"+arg.router_number+",S"+arg.sensor_number+"</option>" );
+        $( "#chart3Option" ).after( "<option>R"+arg.router_number+",S"+arg.sensor_number+"</option>" );
+        $( "#groundPosition1Option" ).after( "<option>R"+arg.router_number+",S"+arg.sensor_number+"</option>" );
+        $( "#roofPositionOption" ).after( "<option>R"+arg.router_number+",S"+arg.sensor_number+"</option>" );
+    } else {
+        $( "#chart1Option" ).after( `<option value="+R"+arg.router_number+",S"+arg.sensor_number+">"+arg.discreption+"</option>` );
+        $( "#chart2Option" ).after( "<option>"+arg.discreption+"</option>" );
+        $( "#chart3Option" ).after( "<option>"+arg.discreption+"</option>" );
+        $( "#groundPosition1Option" ).after( "<option>"+arg.discreption+"</option>" );
+        $( "#roofPositionOption" ).after( "<option>"+arg.discreption+"</option>" );
+    }
+    if(arg.onRoof === 1) {}
+    if(arg.onGround === 1) {}
+
 	var temp = `
 		<tr class="sensorInfo">
          <td class="text-center">`+arg.id+`</td><td class="text-center">`+arg.router_number+`</td><td class="text-center">`+arg.sensor_number+`</td>

@@ -64,4 +64,6 @@
 #define antenSignal "antenSignal"
 #define sensors_Info "sensorsInfoArray"
 #define sensorsInfoType "sensorsInfoType"
+#define onRoof "onRoof"
+#define onGround "onGround"
 #endif // PACKETSDEFINE_H

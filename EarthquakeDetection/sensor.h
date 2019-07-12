@@ -15,6 +15,8 @@
 //    int dataAccelarator;
 //    int time;
 //};
+#define average_number 1000
+#define dataBufferCounterLimit 30000 // for 30 seconds
 
 class Sensor
 {
@@ -32,27 +34,29 @@ public:
     QString batteryLevel;// = "80%";
     QString routerBatteryLevel;
     int sampleRate = 200;
-
+    int counter = 0 ;
+    int sum = 0;
     QString low_pass = "15";
     QString high_pass = "0.1";
     QString Defaultbordar;
     QString Defaultdescription="Sensor";
     int DefaultsampleRate;
     QString DefaultbandpassFilter;
-
+    uint8_t algorithmRunCounter = 0;
     bool savingOnLocal = false;
     bool savingOnWeb = false;
     bool sendingToWeb = false;
     bool runTest = false ;
     bool isConnected = true;
+    bool onRoof = false;
+    bool onGround = false;
     QString story = "4x";
     QString sensorType = "A";
     QList<int> dataX;
     QList<int> dataY;
     QVector<QPointF> data;
     QVector<SensorData> dataList, testDataList;
-    QVector<SensorData> dataBuffer;
-    int dataBufferCounterLimit = 30000; // for 30 seconds
+    QVector<SensorData> dataBuffer; 
     int yearBuff = 0;
     int monthBuff, dayBuff, hourBuff, minuteBuff;
     QList<int> sensorLoss = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};

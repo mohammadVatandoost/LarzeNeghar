@@ -242,6 +242,9 @@ function decodeSocketPacket(data) {
                }
            } else {
                console.log('sensor does not exist');
+               sensorData["discreption"] = "";
+               sensorData[packetsCode.onRoof] = 0;
+               sensorData[packetsCode.onGround] = 0;
                sensors.push(sensorData);
                db.insertNewSensor(sensorData.router_number, sensorData.sensor_number, '15', '0.1');
                console.log("newSensorInfo : " + JSON.stringify(sensorData));
