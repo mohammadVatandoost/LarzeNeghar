@@ -28,7 +28,8 @@ SOURCES += \
     sensordata.cpp \
     Biquad.cpp \
     Butterworth.cpp \
-    jsonfileapi.cpp
+    jsonfileapi.cpp \
+    algorithmthread.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -45,4 +46,5 @@ HEADERS += \
     sensordata.h \
     Biquad.h \
     Butterworth.h \
-    jsonfileapi.h
+    jsonfileapi.h \
+    algorithmthread.h

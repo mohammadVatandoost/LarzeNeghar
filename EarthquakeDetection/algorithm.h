@@ -1,6 +1,6 @@
 #ifndef ALGORITHM_H
 #define ALGORITHM_H
-#include "Butterworth.h"
+#include "sensordata.h"
 #include "QDebug"
 //#include "Iir.h"
 //#include "assert_print.h"
@@ -19,8 +19,8 @@ public:
     // 4th order butterworth
     int filterOrder = 4;
     double overallGain = 1.0;
-    vector <Biquad> coeffs;
-    Butterworth butterworth;
+//    vector <Biquad> coeffs;
+//    Butterworth butterworth;
     QVector<float> a;
     QVector<float> b;
     // filtering
@@ -38,6 +38,7 @@ public:
     void setParameters(float highPass, float lowPass, int longPoint, int shortWin, int staLtaTreshold, int winLength);
     void butterWorthTest();
     void getButterWorthCoeffs();
+    bool runAlgorithm(QVector<SensorData> data);
     QVector<int> absVector(QVector<int> temp);
     QVector<int> zeros(int size);
     float meanQVector(QVector<int> temp);

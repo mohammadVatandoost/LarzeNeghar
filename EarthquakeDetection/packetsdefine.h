@@ -66,4 +66,5 @@
 #define sensorsInfoType "sensorsInfoType"
 #define onRoof "onRoof"
 #define onGround "onGround"
+#define colibrateType "colibrateType"
 #endif // PACKETSDEFINE_H

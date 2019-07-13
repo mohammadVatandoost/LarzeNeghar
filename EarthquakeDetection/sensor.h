@@ -17,6 +17,7 @@
 //};
 #define average_number 1000
 #define dataBufferCounterLimit 30000 // for 30 seconds
+#define dataBufferAfetrLimit 120000 // for 120 seconds (after eqthrquake detected)
 
 class Sensor
 {
@@ -48,8 +49,9 @@ public:
     bool sendingToWeb = false;
     bool runTest = false ;
     bool isConnected = true;
-    bool onRoof = false;
-    bool onGround = false;
+    bool onRoofSensor = false;
+    bool onGroundSensor = false;
+    bool earthquackHappen = false;
     QString story = "4x";
     QString sensorType = "A";
     QList<int> dataX;

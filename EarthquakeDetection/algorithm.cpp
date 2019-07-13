@@ -24,36 +24,41 @@ void Algorithm::setParameters(float highPass, float lowPass, int longPoint, int 
 
 void Algorithm::butterWorthTest()
 {
-    qDebug() << "fs :" << fs << ", w1 :"<<w1<<", w2:"<<w2<<", filterOrder:"<< filterOrder << ", overallGain:"<<overallGain;
-    bool designedCorrectly = butterworth.loPass(fs,  // fs
-                                                    w1,    // freq1
-                                                    w2,      // freq2. N/A for lowpass
-                                                    filterOrder,
-                                                    coeffs,
-                                                    overallGain);
-    if(designedCorrectly) {qDebug() << "designedCorrectly";}
-   qDebug() << "coeffs.size() :"<< coeffs.size();
-   for(int i=0; i<coeffs.size(); i++) {
-       qDebug() << i << " : " << coeffs.at(i).a1 << ","<< coeffs.at(i).a2 << ","<< coeffs.at(i).a3 << ","<< coeffs.at(i).a4 << ","<< coeffs.at(i).b0 << ","<< coeffs.at(i).b1 << ","<< coeffs.at(i).b2 << ","<< coeffs.at(i).b3 << ","<< coeffs.at(i).b4 ;
-   }
+//    qDebug() << "fs :" << fs << ", w1 :"<<w1<<", w2:"<<w2<<", filterOrder:"<< filterOrder << ", overallGain:"<<overallGain;
+//    bool designedCorrectly = butterworth.loPass(fs,  // fs
+//                                                    w1,    // freq1
+//                                                    w2,      // freq2. N/A for lowpass
+//                                                    filterOrder,
+//                                                    coeffs,
+//                                                    overallGain);
+//    if(designedCorrectly) {qDebug() << "designedCorrectly";}
+//   qDebug() << "coeffs.size() :"<< coeffs.size();
+//   for(int i=0; i<coeffs.size(); i++) {
+//       qDebug() << i << " : " << coeffs.at(i).a1 << ","<< coeffs.at(i).a2 << ","<< coeffs.at(i).a3 << ","<< coeffs.at(i).a4 << ","<< coeffs.at(i).b0 << ","<< coeffs.at(i).b1 << ","<< coeffs.at(i).b2 << ","<< coeffs.at(i).b3 << ","<< coeffs.at(i).b4 ;
+//   }
 }
 
 void Algorithm::getButterWorthCoeffs()
 {
-    bool designedCorrectly = butterworth.loPass(fs,  // fs
-                                                    w1,    // freq1
-                                                    w2,      // freq2. N/A for lowpass
-                                                    filterOrder,
-                                                    coeffs,
-                                                    overallGain);
-    if(designedCorrectly) {
-        qDebug() << "designedCorrectly";
-        a.append(coeffs.at(0).a1);a.append(coeffs.at(0).a2);a.append(coeffs.at(0).a3);a.append(coeffs.at(0).a4);
-        a.append(coeffs.at(0).b0);a.append(coeffs.at(0).b1);a.append(coeffs.at(0).b2);a.append(coeffs.at(0).b3);a.append(coeffs.at(0).b4);
+//    bool designedCorrectly = butterworth.loPass(fs,  // fs
+//                                                    w1,    // freq1
+//                                                    w2,      // freq2. N/A for lowpass
+//                                                    filterOrder,
+//                                                    coeffs,
+//                                                    overallGain);
+//    if(designedCorrectly) {
+//        qDebug() << "designedCorrectly";
+//        a.append(coeffs.at(0).a1);a.append(coeffs.at(0).a2);a.append(coeffs.at(0).a3);a.append(coeffs.at(0).a4);
+//        a.append(coeffs.at(0).b0);a.append(coeffs.at(0).b1);a.append(coeffs.at(0).b2);a.append(coeffs.at(0).b3);a.append(coeffs.at(0).b4);
 
-        b.append(coeffs.at(1).a1);b.append(coeffs.at(1).a2);b.append(coeffs.at(1).a3);b.append(coeffs.at(1).a4);
-        b.append(coeffs.at(1).b0);b.append(coeffs.at(1).b1);b.append(coeffs.at(1).b2);b.append(coeffs.at(1).b3);b.append(coeffs.at(1).b4);
-    }
+//        b.append(coeffs.at(1).a1);b.append(coeffs.at(1).a2);b.append(coeffs.at(1).a3);b.append(coeffs.at(1).a4);
+//        b.append(coeffs.at(1).b0);b.append(coeffs.at(1).b1);b.append(coeffs.at(1).b2);b.append(coeffs.at(1).b3);b.append(coeffs.at(1).b4);
+    //    }
+}
+
+bool Algorithm::runAlgorithm(QVector<SensorData> data)
+{
+
 }
 
 QVector<int> Algorithm::absVector(QVector<int> temp)
