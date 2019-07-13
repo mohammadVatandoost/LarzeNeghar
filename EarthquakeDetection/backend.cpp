@@ -41,6 +41,9 @@ void BackEnd::setSensorsList(SensorsList *sensorsList)
     packetTimer = new QTimer(this);
     connect(packetTimer, SIGNAL(timeout()), this, SLOT(timerPacketTimeOut()));
     packetTimer->start(15);
+    // run thread
+//    algorithmThread = new AlgorithmThread(sensorsList);
+//    algorithmThread->start();
 }
 
 QVector<Sensor> BackEnd::getSensorsList()
