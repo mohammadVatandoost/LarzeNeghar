@@ -2,6 +2,7 @@
 #define ALGORITHM_H
 #include "sensordata.h"
 #include "QDebug"
+#include "math.h"
 //#include "Iir.h"
 //#include "assert_print.h"
 
@@ -38,11 +39,12 @@ public:
     void setParameters(float highPass, float lowPass, int longPoint, int shortWin, int staLtaTreshold, int winLength);
     void butterWorthTest();
     void getButterWorthCoeffs();
-    bool runAlgorithm(QVector<SensorData> data);
+    float runAlgorithm(QVector<double> data);
+    QVector<double> bandPassFilter(QVector<double> data);
     QVector<int> absVector(QVector<int> temp);
     QVector<int> zeros(int size);
-    float meanQVector(QVector<int> temp);
-    QVector<int> splitQvector(QVector<int> temp, int start, int stop);
+    double meanQVector(QVector<double> temp);
+    QVector<double> splitQvector(QVector<double> temp, int start, int stop);
 };
 
 #endif // ALGORITHM_H

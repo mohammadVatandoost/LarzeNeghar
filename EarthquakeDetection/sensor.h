@@ -57,8 +57,8 @@ public:
     QList<int> dataX;
     QList<int> dataY;
     QVector<QPointF> data;
-    QVector<SensorData> dataList, testDataList;
-    QVector<SensorData> dataBuffer; 
+    QVector<SensorData> dataList, testDataList, dataBuffer;
+    QVector<double> alghorithmDataBuffer;
     int yearBuff = 0;
     int monthBuff, dayBuff, hourBuff, minuteBuff;
     QList<int> sensorLoss = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};

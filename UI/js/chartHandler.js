@@ -28,9 +28,15 @@ var dataChart2 = [];
 var dataChart3 = [];
 var seconds = 0;
 var miliSeconds = 0 ;
+// for fft
+var maxFrequency = 200
 var fftChart1 = [];
 var fftChart2 = [];
 var fftChart3 = [];
+var frequency = [];
+for(var i=0; i<maxFrequency; i++) {
+  frequency.push(i);
+}
           // for(var i=0; i < numberOfDataShowing ; i++) {
           //   // if(i%20 === 0) {
           //     times.push("12:"+counter);
@@ -89,7 +95,7 @@ var config = {
 var configFFTChart = {
        type: 'line',
        data: {
-                  labels: times,
+                  labels: frequency,
                   datasets: [{
                       label: 'Chart1',
                       backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
@@ -139,39 +145,11 @@ var configFFTChart = {
           var myVar = setInterval(myTimer, 250);
            
           function myTimer() {
-
-
-              // times.shift();
-              // dataChart1.shift();
-              // dataChart2.shift();
-              // dataChart3.shift();
-              // times.push("12:"+counter);
-              // dataChart1.push(randomScalingFactor());
-              // dataChart2.push(randomScalingFactor());
-              // dataChart3.push(randomScalingFactor());
-              // for(var i=0; i<10; i++ ) {
-              //    dataChart1.push(randomScalingFactor());
-              //    dataChart2.push(randomScalingFactor());
-              //    dataChart3.push(randomScalingFactor());
-              //    times.push("12:"+counter);
-              //    counter = parseInt(counter) + 1 ;
-              //  }
-              // dataChart1 = dataChart1.concat(testChartData());
-              // dataChart2 = dataChart2.concat(testChartData());
-              // dataChart3 = dataChart3.concat(testChartData());
-              // times = times.concat(testLabelData());
-              // counter = parseInt(counter) + 1 ;
-          //     if(counter%5 === 0) {
-                // while( dataChart1.length >600) {dataChart1.shift();}
-                // while( dataChart2.length >600) {dataChart2.shift();}
-                // while( dataChart3.length >600) {dataChart3.shift();}
-                // while( times.length >600) {times.shift();}
                 if( (dataChart1.length !== 0) || (dataChart2.length !== 0) || (dataChart3.length !== 0) ) {
                  window.myLine.update();  
                  window.FFTLine.update();
                  console.log("window.myLine.update(); ");
                 }
-          //     }
               
           }
 
@@ -195,21 +173,26 @@ var configFFTChart = {
 
 // get new sensor data 
 ipc.on('sensor-data',function(event,arg) {
-  // console.log("sensor-data");console.log(arg);
+  console.log("sensor-data");console.log(arg);
   var dataNumber = 0; var flagPacketCounter = true; 
   arg = JSON.parse(arg);
   // chart 1
   if(hasProperty(arg, 'chart1')) {
      dataNumber = arg.chart1.length;
-     // dataChart1 = dataChart1.concat(arg.chart1);
-     // while(dataChart1.length < numberOfDataShowing) {dataChart1.push(null);}
-     for(var i=0; i<arg.chart1.length; i++) {dataChart1.push(arg.chart1[i]);}
+     for(var i=0; i<dataNumber; i++) {dataChart1.push(arg.chart1[i]);}
     if(packetCounter > numberOfDataShowing ) {
        while(dataChart1.length > numberOfDataShowing) {
         dataChart1.shift();
        }
     } else { if(flagPacketCounter) {packetCounter = packetCounter + arg.chart1.length ; flagPacketCounter = false;} }
-    console.log("chart 1 :");console.log(dataChart1);
+    // console.log("chart 1 :");console.log(dataChart1);
+  }
+  // FFT chart 1
+  if(hasProperty(arg, 'chart1FFT')) {
+    var fftChartTemp = arg['chart1FFT'];
+    var dataNumber2 = fftChartTemp.length;
+    while(fftChart1.length > 0) {fftChart1.shift();}
+    for(var i=0; i<dataNumber2; i++) {fftChart1.push(fftChartTemp[i]);}
   }
   // chart 2
   if(hasProperty(arg, 'chart2')) {
@@ -224,6 +207,13 @@ ipc.on('sensor-data',function(event,arg) {
     } else { if(flagPacketCounter) {packetCounter = packetCounter + arg.chart2.length ; flagPacketCounter = false;} }
     // console.log("chart 2 :");console.log(dataChart2);
   }
+  // FFT chart 2
+  if(hasProperty(arg, 'chart2FFT')) {
+    var fftChartTemp = arg['chart2FFT'];
+    var dataNumber2 = fftChartTemp.length;
+    while(fftChart2.length > 0) {fftChart2.shift();}
+    for(var i=0; i<dataNumber2; i++) {fftChart2.push(fftChartTemp[i]);}
+  }
   // chart 3
   if(hasProperty(arg, 'chart3')) {
     dataNumber = arg.chart3.length;
@@ -235,6 +225,14 @@ ipc.on('sensor-data',function(event,arg) {
        }
     } else { if(flagPacketCounter) {packetCounter = packetCounter + arg.chart3.length ; flagPacketCounter = false;} }
     // console.log("chart 3 :");console.log(dataChart3);
+  }
+  // FFT chart 3
+  if(hasProperty(arg, 'chart3FFT')) {
+    // console.log
+    var fftChartTemp = arg['chart3FFT'];
+    var dataNumber2 = fftChartTemp.length;
+    while(fftChart3.length > 0) {fftChart3.shift();}
+    for(var i=0; i<dataNumber2; i++) {fftChart3.push(fftChartTemp[i]);}
   }
   // times
   if( (seconds < arg[packetsCode.Router_second]) || (miliSeconds < arg[packetsCode.Router_milisec]) 
@@ -256,6 +254,12 @@ ipc.on('sensor-data',function(event,arg) {
    // window.myLine.update();
 });
 
+// FFT apply
+// const chartFFTApply = document.getElementById('FFT');
+
+// chartFFTApply.addEventListener('click', function () {
+
+// });
 // Chart apply
 const chartApply = document.getElementById('applyChartSelect');
 
@@ -276,13 +280,18 @@ chartApply.addEventListener('click', function () {
      // dataChart1 = [];
       while (dataChart1.length > 0) {dataChart1.shift();}
       while (fftChart1.length > 0) {fftChart1.shift();}
-      console.log("dataChart1");console.log(dataChart1);
+      // console.log("dataChart1");console.log(dataChart1);
    charts.push(chartTemp);
   } else {
-   router = chart1.split(",")[0].replace("R","");
-   sensor = chart1.split(",")[1].replace("S",""); 
-   chartTemp = { "R": router, "S": sensor, "B": chart1Bordar };
-   charts.push(chartTemp);
+   if(chart1.includes(",S")) { 
+    router = chart1.split(",")[0].replace("R","");
+    sensor = chart1.split(",")[1].replace("S",""); 
+    chartTemp = { "R": router, "S": sensor, "B": chart1Bordar };
+    charts.push(chartTemp);
+   } else {
+    chartTemp = { "description": chart1, "B": chart1Bordar };
+    charts.push(chartTemp);
+   }
    if( (dataChart2.length > 0) | (dataChart3.length > 0) ) {
         while( dataChart1.length < times.length ) { dataChart1.push(null); }
    }
@@ -291,13 +300,18 @@ chartApply.addEventListener('click', function () {
      chartTemp = {};
       while (fftChart2.length > 0) {fftChart2.shift(); }
       while (dataChart2.length > 0) {dataChart2.shift();}
-      console.log("dataChart2");console.log(dataChart2);
+      // console.log("dataChart2");console.log(dataChart2);
    charts.push(chartTemp);
   } else {
-   router = chart2.split(",")[0].replace("R","");
-   sensor = chart2.split(",")[1].replace("S",""); 
-   chartTemp = { "R": router, "S": sensor, "B": chart2Bordar };
-   charts.push(chartTemp);
+   if(chart2.includes(",S")) { 
+    router = chart2.split(",")[0].replace("R","");
+    sensor = chart2.split(",")[1].replace("S",""); 
+    chartTemp = { "R": router, "S": sensor, "B": chart2Bordar };
+    charts.push(chartTemp);
+   } else {
+    chartTemp = { "description": chart2 , "B": chart2Bordar};
+    charts.push(chartTemp);
+   }
    if( (dataChart1.length > 0) | (dataChart3.length > 0) ) {
       while( dataChart2.length < times.length ) { dataChart2.push(null); }
    }
@@ -306,13 +320,18 @@ chartApply.addEventListener('click', function () {
      chartTemp = {};
       while (dataChart3.length > 0) {dataChart3.shift();}
       while (fftChart3.length > 0) {fftChart3.shift(); }
-      console.log("dataChart3");console.log(dataChart3);
+      // console.log("dataChart3");console.log(dataChart3);
    charts.push(chartTemp);
   } else {
-   router = chart3.split(",")[0].replace("R","");
-   sensor = chart3.split(",")[1].replace("S",""); 
-   chartTemp = { "R": router, "S": sensor, "B": chart3Bordar };
-   charts.push(chartTemp);
+    if(chart3.includes(",S")) { 
+      router = chart3.split(",")[0].replace("R","");
+      sensor = chart3.split(",")[1].replace("S",""); 
+      chartTemp = { "R": router, "S": sensor, "B": chart3Bordar };
+      charts.push(chartTemp);
+    } else {
+      chartTemp = { "description": chart3 , "B": chart3Bordar};
+      charts.push(chartTemp);
+    }  
    if( (dataChart1.length > 0) | (dataChart2.length > 0) ) {
         while( dataChart3.length < times.length ) { dataChart3.push(null); }
    }
@@ -322,8 +341,9 @@ chartApply.addEventListener('click', function () {
       window.FFTLine.update();
       console.log("window.myLine.update(); ");
    }
-  console.log(charts);
-  ipc.send('chartsApply', JSON.stringify({charts: charts, 'packetType': 'selectChartsType'}));
+   // console.log('FFT');
+  // console.log($('#FFT').val());
+  ipc.send('chartsApply', JSON.stringify({charts: charts, 'packetType': 'selectChartsType', 'fft_chart_second': $('#FFT').val() }) );
     notifier.notify({
         title: 'Notification',
         message: 'Chart Apply'

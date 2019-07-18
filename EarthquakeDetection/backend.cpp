@@ -42,8 +42,8 @@ void BackEnd::setSensorsList(SensorsList *sensorsList)
     connect(packetTimer, SIGNAL(timeout()), this, SLOT(timerPacketTimeOut()));
     packetTimer->start(15);
     // run thread
-//    algorithmThread = new AlgorithmThread(sensorsList);
-//    algorithmThread->start();
+    algorithmThread = new AlgorithmThread(sensorsList);
+    algorithmThread->start();
 }
 
 QVector<Sensor> BackEnd::getSensorsList()
@@ -706,11 +706,11 @@ void BackEnd::newDecode()
         }
 
         // check if need to be sended by TCP
-        if(sendAverage) {
-          sendChartData(qJsonObjectTemp, UID, calculateAverage(xBordar), calculateAverage(yBordar), calculateAverage(zBordar) );
-        } else {
+//        if(sendAverage) {
+//          sendChartData(qJsonObjectTemp, UID, calculateAverage(xBordar), calculateAverage(yBordar), calculateAverage(zBordar) );
+//        } else {
           sendChartData(qJsonObjectTemp, UID, xBordar, yBordar, zBordar);
-        }
+//        }
      }
      //send sensorsInfo
      sensorsInfoPacket.insert(sensors_Info, sensorsInfoArray);
@@ -722,13 +722,26 @@ void BackEnd::newDecode()
  }
 }
 
-QJsonArray BackEnd::calculateAverage(QJsonArray dataArray)
+QJsonArray BackEnd::calculateAverage(QJsonArray dataArray, QVector<double> *fft_vector)
 {
     double sum = 0;
-    for(int i=0; i< dataArray.size();i++) {
-       sum = sum + dataArray.at(i).toDouble();
+    int arraySize = dataArray.size();
+    for(int i=0; i< arraySize;i++) {
+       double temp_double = dataArray.at(i).toDouble();
+//       qDebug() << "calculateAverage temp_double:" << temp_double;
+       sum = sum + temp_double;
+       fft_vector->push_back(temp_double);
     }
-    QJsonArray temp; temp.append( (double)(sum/dataArray.size()) );
+
+    int dataNumber = fft_second*100;
+//    qDebug() << "calculateAverage :" << fft_vector->length() << "," << dataNumber;
+    while(fft_vector->length() > dataNumber ) { fft_vector->removeAt(0);}
+    QJsonArray temp; temp.append( (double)(sum/arraySize) );
+//    qDebug() << "calculateAverage :" << fft_vector->length();
+//    for(int j=fft_vector->length()-1;j>fft_vector->length()-9; j--) {
+//       qDebug() << "calculateAverage :" << j << " , " << fft_vector->at(j);
+//    }
+//    qDebug() << "calculateAverage :" << fft_vector->length();
     return temp;
 }
 
@@ -740,26 +753,41 @@ void BackEnd::sendChartData(QJsonObject tempQJsonObject, int sensorUID, QJsonArr
           qDebug()<< "checkDataSendToChart1()";
         if(chart1Bordar == 'X') {
              qDebug()<< "routerNum : " << routerNum << " , UID : "<< UID ;
-            tempQJsonObject.insert("chart1", xBordar);couterCheck++;
+            tempQJsonObject.insert("chart1", calculateAverage(xBordar, &chart_fft1) );couterCheck++;
+            tempQJsonObject.insert(chart1FFT, calculateFFT(chart_fft1) );
         } else if(chart1Bordar == 'Y') {
-            tempQJsonObject.insert("chart1", yBordar);couterCheck++;
-        } else if(chart1Bordar == 'Z') {tempQJsonObject.insert("chart1", zBordar);couterCheck++;}
+            tempQJsonObject.insert("chart1", calculateAverage(yBordar, &chart_fft1) );couterCheck++;
+            tempQJsonObject.insert(chart1FFT, calculateFFT(chart_fft1) );
+        } else if(chart1Bordar == 'Z') {
+            tempQJsonObject.insert("chart1", calculateAverage(zBordar, &chart_fft1) );couterCheck++;
+            tempQJsonObject.insert(chart1FFT, calculateFFT(chart_fft1) );
+        }
     }
     if(checkDataSendToChart2()) {
 //            qDebug()<< "checkDataSendToChart2()";
         if(chart2Bordar == 'X') {
-            tempQJsonObject.insert("chart2", xBordar);couterCheck++;
+            tempQJsonObject.insert("chart2", calculateAverage(xBordar, &chart_fft2) );couterCheck++;
+            tempQJsonObject.insert(chart2FFT, calculateFFT(chart_fft2) );
         } else if(chart2Bordar == 'Y') {
-            tempQJsonObject.insert("chart2", yBordar);couterCheck++;
-        } else if(chart2Bordar == 'Z') {tempQJsonObject.insert("chart2", zBordar);couterCheck++;}
+            tempQJsonObject.insert("chart2", calculateAverage(yBordar, &chart_fft2) );couterCheck++;
+            tempQJsonObject.insert(chart2FFT, calculateFFT(chart_fft2) );
+        } else if(chart2Bordar == 'Z') {
+            tempQJsonObject.insert("chart2", calculateAverage(zBordar, &chart_fft2) );couterCheck++;
+            tempQJsonObject.insert(chart2FFT, calculateFFT(chart_fft2) );
+        }
     }
     if(checkDataSendToChart3()) {
 //            qDebug()<< "checkDataSendToChart2()";
         if(chart3Bordar == 'X') {
-            tempQJsonObject.insert("chart3", xBordar);couterCheck++;
+            tempQJsonObject.insert("chart3", calculateAverage(xBordar, &chart_fft3) );couterCheck++;
+            tempQJsonObject.insert(chart3FFT, calculateFFT(chart_fft3) );
         } else if(chart3Bordar == 'Y') {
-            tempQJsonObject.insert("chart3", yBordar);couterCheck++;
-        } else if(chart3Bordar == 'Z') {tempQJsonObject.insert("chart3", zBordar);couterCheck++;}
+            tempQJsonObject.insert("chart3", calculateAverage(yBordar, &chart_fft3) );couterCheck++;
+            tempQJsonObject.insert(chart3FFT, calculateFFT(chart_fft3) );
+        } else if(chart3Bordar == 'Z') {
+            tempQJsonObject.insert("chart3", calculateAverage(zBordar, &chart_fft3));couterCheck++;
+            tempQJsonObject.insert(chart3FFT, calculateFFT(chart_fft3) );
+        }
     }
     if(couterCheck > 0) {
       QJsonDocument doc(tempQJsonObject);
@@ -772,6 +800,25 @@ QString BackEnd::jsonToString(QJsonObject jsonObject)
 {
     QJsonDocument doc(jsonObject);
     return  doc.toJson(QJsonDocument::Compact);
+}
+
+QJsonArray BackEnd::calculateFFT(QVector<double> temp)
+{
+//    qDebug() << "calculateFFT :" << temp.length();
+    QJsonArray fft_value;
+    if(temp.length() == 0) {return fft_value;}
+    fftw_complex out[temp.length()], in[temp.length()];
+    for(int j=0; j<temp.length(); j++) {in[j][0] = temp.at(j);in[j][1] = 0;    }
+    fftw_plan p = fftw_plan_dft_1d(temp.length(), in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+    fftw_execute(p);
+    int frequencyBand = temp.length();
+    if(frequencyBand > 200) {frequencyBand = 200 ;}
+    for(int i=0; i< frequencyBand; i++) {
+        fft_value.append(sqrt(pow(out[i][0],2)+pow(out[i][1],2) ) );
+    }
+    fftw_destroy_plan(p);
+    fftw_cleanup();
+    return fft_value;
 }
 
 void BackEnd::appendItem()
@@ -943,6 +990,7 @@ void BackEnd::readTcpData()
           if(qJsonObject.value(packetType) == selectChartsType) {
               //{'type': 'selectChartsType', 'charts' : [{ R: router, S: sensor, B: chart2Bordar }] }
               QJsonArray chartsJSON = qJsonObject.value("charts").toArray();
+              fft_second = qJsonObject.value(fft_chart_second).toString().toInt();
               for(int i=0; i< chartsJSON.size();i++) {
                  QJsonObject tempQJSONObject = chartsJSON.at(i).toObject();
                  // qDebug()<<"tempQJSONObject :" << tempQJSONObject ;
@@ -969,10 +1017,14 @@ void BackEnd::readTcpData()
                }
              }
               qDebug()<< chart1Router <<","<< chart1Senesor <<","<< chart1Bordar <<","<< chart2Router <<","<< chart2Senesor <<","<< chart2Bordar <<","<< chart3Router<<","<< chart3Senesor<<","<< chart3Bordar ;
-              qDebug()<< "chart1 : "<< chart1 << " chart2 : " << chart2 << " chart3 : " << chart3 ;
+              qDebug()<< "chart1 : "<< chart1 << " chart2 : " << chart2 << " chart3 : " << chart3 << "fft_second" << fft_second ;
               
         } else if(qJsonObject.value(packetType) == eewConfigType) {
-          
+              if(algorithmThread) {
+                  algorithmThread->setParameters(qJsonObject.value("highPass").toInt(), qJsonObject.value("lowPass").toInt(),
+                                                 qJsonObject.value("longPoint").toInt(), qJsonObject.value("shortPoint").toInt(),
+                                                 qJsonObject.value("staLtaTreshold").toInt(), qJsonObject.value("winLength").toInt());
+              }
         } else if(qJsonObject.value(packetType) == runTestType) {
             qDebug() << "runTest";
             mList->runTest();
@@ -992,6 +1044,7 @@ void BackEnd::readTcpData()
               mList->updateSensorInfo(tempQJSONObject);
            }
            bool activateAlgorithm = qJsonObject.value("activateAlgorithm").toBool() ;
+           algorithmThread->setRunAlghoritm(activateAlgorithm);
         }
        } else {
          qDebug() << "readTcpData does not have packet type";

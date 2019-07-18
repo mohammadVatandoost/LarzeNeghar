@@ -60,18 +60,18 @@ console.log('Server listening on ' + HOST +':'+ PORT);
     win.loadFile('index.html')
   
     // Open the DevTools.
-    // win.webContents.openDevTools()
+    win.webContents.openDevTools()
 
     win.webContents.on('did-finish-load', () => {
-        console.log('did-finish-load');
-      exec('start ./EarthquakeDetection/EarthquakeDetection.exe', (err, stdout, stderr) => {
-          console.log("run exe");
-          if (err) {
-              console.error(err);
-              return;
-          }
-          console.log(stdout);
-      });
+      //   console.log('did-finish-load');
+      // exec('start ./EarthquakeDetection/EarthquakeDetection.exe', (err, stdout, stderr) => {
+      //     console.log("run exe");
+      //     if (err) {
+      //         console.error(err);
+      //         return;
+      //     }
+      //     console.log(stdout);
+      // });
 
   });
   
@@ -129,10 +129,33 @@ ipc.on('eewConfig', function(event,arg) {
 // get charts
 ipc.on('chartsApply', function(event,arg) {
   console.log("chartsApply");
-  console.log(arg+"***");
+  var temp = JSON.parse(arg);
+  var charts = temp.charts;
+  var sendmessage = {'packetType': 'selectChartsType', 'fft_chart_second': temp['fft_chart_second']};
+  var chartsTemp = [];
+  for(var i=0;i<charts.length; i++) {
+    if(hasProperty(charts[i], "description")) {
+       db.findSensorWithDes(charts[i].description).then((response) => {
+         chartsTemp.push({"R": response.router_number, "S": response.sensor_number, "B": charts[i].B});
+         if(charts.length === chartsTemp.length) {
+           sendmessage["charts"] = chartsTemp;
+           console.log(sendmessage + "***");
+           if(serverSocket !== null) {
+              serverSocket.write(sendmessage + "***");
+           }
+         }
+       }).catch((err) => {
+            console.log(err.message);
+       });
+    } else {chartsTemp.push(charts[i]);}
+  }
+  if(charts.length === chartsTemp.length) {
+    sendmessage["charts"] = chartsTemp;
+    console.log(sendmessage + "***");
     if(serverSocket !== null) {
-        serverSocket.write(arg + "***");
+        serverSocket.write(sendmessage + "***");
     }
+  }
 });
 
 //  run tests
@@ -299,3 +322,6 @@ function runDBTest(dataBase) {
     // dataBase.checkNewSensor(1,10);
 }
 
+function hasProperty(object, key) {
+    return object ? hasOwnProperty.call(object, key) : false;
+ }

@@ -11,6 +11,9 @@ public:
     SensorsList *sensorsList;
     Algorithm algorithm;
     void earthquakeHappen();
+    void setParameters(float highPass, float lowPass, int longPoint, int shortWin, int staLtaTreshold, int winLength);
+    bool runAlghorithm = true;
+    void setRunAlghoritm(bool temp);
 protected:
    virtual void run();
 };

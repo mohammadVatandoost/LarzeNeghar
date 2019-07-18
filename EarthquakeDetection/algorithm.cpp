@@ -56,9 +56,69 @@ void Algorithm::getButterWorthCoeffs()
     //    }
 }
 
-bool Algorithm::runAlgorithm(QVector<SensorData> data)
+float Algorithm::runAlgorithm(QVector<double> data)
 {
+    nt = data.length();
+    QVector<float> sra;
+    int temp = nt-ns;
+    for(int i=0; i< temp; i++) {
+        if(i>n1) {
+           double lta = meanQVector(splitQvector(data, i-n1, i) );
+           double sta = meanQVector(splitQvector(data, i, i+ ns) );
+           sra.append(sta/lta);
+        } else {
+           sra.append(0);
+        }
+    }
+    temp = sra.length();
+    for(int i=0; i< temp; i++) {
+        if(sra[i] > thresh) {
+            return i*dt;
+        }
+    }
+    return 0;
+}
 
+QVector<double> Algorithm::bandPassFilter(QVector<double> data)
+{
+    /*
+
+    Input:
+
+    f1, the lowest frequency to be included, in Hz
+
+    f2, the highest frequency to be included, in Hz
+
+    f_samp, sampling frequency of the audio signal to be filtered, in Hz
+
+    N, the order of the filter; assume N is odd
+
+    Output:
+
+    h, a bandpass FIR filter in the form of an N-element array */
+
+    {
+
+    //Normalize f_c and ω _c so that pi is equal to the Nyquist angular frequency
+
+      int f1_c = f1/fs;
+      int f2_c = f2/fs;
+
+      int ω1_c = 2*pi*f1_c;
+
+      int ω2_c = 2*pi*f2_c;
+      int N = 4 ; // filter order
+      int middle = N/2;    /*Integer division, dropping remainder*/
+
+      for i = −N/2 to N/2
+
+       if (i == 0) h(middle) = 2*(f2_c – f1_c)
+
+       else
+
+      h(i + middle) = sin(ω2_c*i)/(pi*i) – sin(ω1_c*i)/(pi*i)
+
+     }
 }
 
 QVector<int> Algorithm::absVector(QVector<int> temp)
@@ -79,9 +139,9 @@ QVector<int> Algorithm::zeros(int size)
     return temp;
 }
 
-float Algorithm::meanQVector(QVector<int> temp)
+double Algorithm::meanQVector(QVector<double> temp)
 {
-    int sum = 0;
+    double sum = 0;
     int sizeVector = temp.size();
     for(int i =0; i<sizeVector;i++) {
         sum = sum + temp[i];
@@ -89,9 +149,9 @@ float Algorithm::meanQVector(QVector<int> temp)
     return sum/sizeVector;
 }
 
-QVector<int> Algorithm::splitQvector(QVector<int> temp, int start, int stop)
+QVector<double> Algorithm::splitQvector(QVector<double> temp, int start, int stop)
 {
-    QVector<int> tempBuffer;
+    QVector<double> tempBuffer;
     int sizeVector = stop+1;
     for(int i =start; i<sizeVector;i++) {
         tempBuffer.append(temp[i]);

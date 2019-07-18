@@ -42,7 +42,7 @@
         <th>LowPass Frequency</th>
         <th>HighPass Frequency</th>
         <th>Saving on Local</th>
-<!--         <th>Saving on Web</th>
+        <!--         <th>Saving on Web</th>
         <th>Sending to Web</th> -->
       </tr>
     </thead>
@@ -54,7 +54,7 @@
       <div class="form-group flex-row col-md-6">
           <label class="col-lg-3 col-md-4 col-sm-4">on Ground : </label>
           <select class="form-control col-lg-4 col-md-4 col-sm-6" id="groundPosition">
-              <option id="groundPosition1Option">-</option>
+              <option id="groundPositionOption">-</option>
           </select>
       </div>
       <div class="form-group flex-row col-md-6">
@@ -194,6 +194,12 @@
                 <option>X</option><option>Y</option><option>Z</option>
               </select>
             </div>
+          </div>
+          <!-- <button class="btn btn-info" id="applyChartSelect">Apply</button> -->
+          <br/><br/><br/><br/><br/><br/>
+          <div class="form-group">
+             <label for="FFT">Window length for FFT</label>
+             <input type="number" class="form-control" id="FFT" value="5">
           </div>
           <button class="btn btn-info" id="applyChartSelect">Apply</button>
         </div>

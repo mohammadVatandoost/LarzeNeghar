@@ -67,4 +67,9 @@
 #define onRoof "onRoof"
 #define onGround "onGround"
 #define colibrateType "colibrateType"
+
+#define fft_chart_second "fft_chart_second"
+#define chart1FFT "chart1FFT"
+#define chart2FFT "chart2FFT"
+#define chart3FFT "chart3FFT"
 #endif // PACKETSDEFINE_H

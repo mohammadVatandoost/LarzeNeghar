@@ -79,6 +79,22 @@ module.exports.checkNewSensor = function (sensorData ) {
     // });
 };
 
+module.exports.findSensorWithDes = function (des ) {
+    console.log("checkNewSensor");
+    var sql = 'SELECT * FROM Sensors WHERE discreption='+des;
+    return new Promise((resolve, reject) => {
+        db.get(sql, [], (err, row) => {
+          if (err) {
+             reject(err); // optional: you might choose to swallow errors.
+             // return console.log(err.message);
+          } else {
+            var response = {sensorData: row}
+            resolve(response);
+          }
+        });
+    });
+};
+
 module.exports.updateSensorInfo = function (routerNumber, sensorNumber, discreption, low_pass, high_pass, saving_local, saving_web) {
    console.log('updateSensorInfo');
    var sql = `UPDATE Sensors SET discreption = "`+discreption+`", low_pass = "`+low_pass+`", high_pass = "`+high_pass+`", saving_local = `+saving_local+`, saving_web = `+saving_web+` WHERE router_number = `+routerNumber+` and sensor_number = `+sensorNumber ;

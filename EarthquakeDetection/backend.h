@@ -1,4 +1,4 @@
-#ifndef BACKEND_H
+﻿#ifndef BACKEND_H
 #define BACKEND_H
 
 #include <QObject>
@@ -21,6 +21,7 @@
 #include <QFileInfo>
 #include <QFile>
 #include <algorithmthread.h>
+#include <fftw3.h>
 
 class BackEnd : public QObject
 {
@@ -37,7 +38,7 @@ public:
     Q_INVOKABLE static QVariant availablePorts() ;
     int serialPortCounterTry =0 ;
     QSerialPort *serial;
-    AlgorithmThread algorithmThread;
+    AlgorithmThread *algorithmThread;
     QString come_port;
     QTimer *timer, *packetTimer;
     uint8_t timerCounter = 0 ;
@@ -64,7 +65,7 @@ public:
     bool checkDataSendToChart2();
     bool checkDataSendToChart3();
     void newDecode();
-    QJsonArray calculateAverage(QJsonArray dataArray) ;
+    QJsonArray calculateAverage(QJsonArray dataArray, QVector<double> *fft_vector) ;
     void sendChartData(QJsonObject tempQJsonObject, int sensorUID, QJsonArray xBordar, QJsonArray yBordar, QJsonArray zBordar);
 //    void sendSensorData
     QString jsonToString(QJsonObject jsonObject);
@@ -85,8 +86,10 @@ public:
     int packetSize;
     QTcpSocket *pSocket;
     QStorageInfo storage = QStorageInfo::root();
-
-
+//    fftw_complex *chart_fft1, *chart_fft2, *chart_fft3;
+    QVector<double> chart_fft1, chart_fft2, chart_fft3;
+    QJsonArray calculateFFT(QVector<double> temp);
+    int fft_second = 5;
 signals:
 
 public slots:

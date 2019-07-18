@@ -98,15 +98,17 @@ void Sensor::addData(int year, int month, int day, int hour, int minute, int sec
 
         dataList.clear();
     }
+    // for savingOnLocal
     if(savingOnLocal && (isConnected)) {
-//      qDebug()<< "add data :"<< routerNumber << " , "<< sensorNumber<< " : " << savingOnLocal ;
       dataList.append( temp );
     }
+    // for test
     if(runTest) {
         testDataList.append(temp);
     }
     // for algorithm
     dataBuffer.append(temp);
+    alghorithmDataBuffer.append(abs(value-offset));
     if(earthquackHappen) {
         if(dataBuffer.length() == (dataBufferCounterLimit + dataBufferAfetrLimit) ) {
             QVector<QStringList> dataStringList;
@@ -118,10 +120,11 @@ void Sensor::addData(int year, int month, int day, int hour, int minute, int sec
             }
             appendDataToCSV(dataStringList, "./Data/Earthquake_R"+QString::number(routerNumber)+"S"+QString::number(sensorNumber)+bordar+"_"+QString::number(yearBuff)+"_"+QString::number(monthBuff)+"_"+QString::number(dayBuff)+"_"+QString::number(hourBuff)+".csv"); //"_"+QString::number(minuteBuff)+
             dataBuffer.clear();
+            alghorithmDataBuffer.clear();
             earthquackHappen = false;
         }
     } else {
-       while(dataBuffer.length() > dataBufferCounterLimit) {dataBuffer.remove(0);}
+       while(dataBuffer.length() > dataBufferCounterLimit) {dataBuffer.remove(0);alghorithmDataBuffer.remove(0);}
     }
 //    algorithmRunCounter++;
 //    if(algorithmRunCounter == 10) {
