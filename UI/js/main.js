@@ -35,8 +35,8 @@ ipc.on('new-sensor',function(event,arg) {
     $( "#groundPosition1Option" ).after( "<option>R"+arg.router_number+",S"+arg.sensor_number+"</option>" );
     $( "#roofPositionOption" ).after( "<option>R"+arg.router_number+",S"+arg.sensor_number+"</option>" );
 
-    if(arg.onRoof === 1) {}
-    if(arg.onGround === 1) {}
+    if(arg.onRoof === 1) {$("#roofPosition").val("R"+arg.router_number+",S"+arg.sensor_number);}
+    if(arg.onGround === 1) {$("#groundPosition").val("R"+arg.router_number+",S"+arg.sensor_number);}
 
 	var temp = `
 		<tr class="sensorInfo">
@@ -186,18 +186,46 @@ const saveSensorInfo = document.getElementById('saveSensorInfo');
 saveSensorInfo.addEventListener('click', function () {
 	console.log('saveSensorInfo');
 	var sensorsInfo = [];
-	for(var i=0; i<sensorsList.length; i++) {
-	   var temp = {};	
-	   temp['router_number'] = sensorsList[i].router_number; temp['sensor_number'] = sensorsList[i].sensor_number;
-	   temp['discreption'] = $("#discreption"+i).val() ;  
-       if($("#saving_local"+i).is(':checked')) {temp['saving_local'] =  1;} else {temp['saving_local'] =  0;}
-       
-       temp['low_pass'] = $("#low_pass"+i).val() ;  temp['high_pass'] = $("#high_pass"+i).val() ;
-	   sensorsInfo.push(temp);
-	}
-    var sendData = {"sensorsInfo": sensorsInfo ,"activateAlgorithm": $("#activateAlgorithm").is(':checked'), };
-	console.log(sensorsInfo);
-	ipc.send('saveSensorInfo', JSON.stringify(sendData));	
+    var groundPosition = $('#groundPosition').val();  var roofPosition = $('#roofPosition').val();
+    if( (groundPosition === '-') || (roofPosition === '-') ) {
+       // show error
+    } else {
+        for (var i = 0; i < sensorsList.length; i++) {
+            var temp = {};
+            temp['router_number'] = sensorsList[i].router_number;
+            temp['sensor_number'] = sensorsList[i].sensor_number;
+            temp['discreption'] = $("#discreption" + i).val();
+            if ($("#saving_local" + i).is(':checked')) {
+                temp['saving_local'] = 1;
+            } else {
+                temp['saving_local'] = 0;
+            }
+
+            temp['low_pass'] = $("#low_pass" + i).val();
+            temp['high_pass'] = $("#high_pass" + i).val();
+            sensorsInfo.push(temp);
+        }
+        var sendData = {"sensorsInfo": sensorsInfo, "activateAlgorithm": $("#activateAlgorithm").is(':checked')};
+
+        // if(groundPosition === '-') {
+        //
+        // } else {
+            var router = groundPosition.split(",")[0].replace("R", "");
+            var sensor = groundPosition.split(",")[1].replace("S", "");
+            groundPosition = {"R": router, "S": sensor};
+            sendData["groundPosition"] = groundPosition;
+        // }
+        // if(roofPosition === '-') {
+        //
+        // } else {
+            var router = roofPosition.split(",")[0].replace("R", "");
+            var sensor = roofPosition.split(",")[1].replace("S", "");
+            roofPosition = {"R": router, "S": sensor};
+            sendData["roofPosition"] = roofPosition;
+        // }
+        console.log(sensorsInfo);
+        ipc.send('saveSensorInfo', JSON.stringify(sendData));
+    }
 });
 
 

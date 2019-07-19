@@ -203,10 +203,19 @@ ipc.on('saveSensorInfo', function(event,arg) {
   console.log("saveSensorInfo :"+arg);
   var temp = JSON.parse(arg);
   var sensorsInfo = temp.sensorsInfo;
-  for(var i=0; i<sensorsInfo.length ; i++) {
-     db.updateSensorInfo(sensorsInfo[i].router_number, sensorsInfo[i].sensor_number, sensorsInfo[i].discreption, sensorsInfo[i].low_pass, sensorsInfo[i].high_pass, sensorsInfo[i].saving_local, 0);
-     console.log(sensorsInfo[i].router_number +" , "+sensorsInfo[i].sensor_number+','+sensorsInfo[i].low_pass+','+sensorsInfo[i].high_pass+" : 1 , "+sensorsInfo[i].saving_local);
-  } 
+  var groundPosition = temp["groundPosition"];   var roofPosition = temp["roofPosition"];
+    for(var i=0; i<sensorsInfo.length ; i++) {
+      if( (groundPosition["R"] === sensorsInfo[i].router_number) && (groundPosition["S"] === sensorsInfo[i].sensor_number) &&
+          (roofPosition["R"] === sensorsInfo[i].router_number) && (roofPosition["S"] === sensorsInfo[i].sensor_number) ) {
+          db.updateSensorInfo(sensorsInfo[i].router_number, sensorsInfo[i].sensor_number, sensorsInfo[i].discreption, sensorsInfo[i].low_pass, sensorsInfo[i].high_pass, sensorsInfo[i].saving_local, 0, 1, 1);
+      } else if( (groundPosition["R"] === sensorsInfo[i].router_number) && (groundPosition["S"] === sensorsInfo[i].sensor_number) ) {
+          db.updateSensorInfo(sensorsInfo[i].router_number, sensorsInfo[i].sensor_number, sensorsInfo[i].discreption, sensorsInfo[i].low_pass, sensorsInfo[i].high_pass, sensorsInfo[i].saving_local, 0, 0, 1);
+      } else if( (roofPosition["R"] === sensorsInfo[i].router_number) && (roofPosition["S"] === sensorsInfo[i].sensor_number) ) {
+          db.updateSensorInfo(sensorsInfo[i].router_number, sensorsInfo[i].sensor_number, sensorsInfo[i].discreption, sensorsInfo[i].low_pass, sensorsInfo[i].high_pass, sensorsInfo[i].saving_local, 0, 1, 0);
+      } else {
+          db.updateSensorInfo(sensorsInfo[i].router_number, sensorsInfo[i].sensor_number, sensorsInfo[i].discreption, sensorsInfo[i].low_pass, sensorsInfo[i].high_pass, sensorsInfo[i].saving_local, 0, 0, 0);
+      }
+    }
   temp[packetsCode.packetType] = packetsCode.sensorsInfo;
     if(serverSocket !== null) {
         serverSocket.write(JSON.stringify(temp) + "***");

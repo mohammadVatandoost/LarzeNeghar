@@ -95,9 +95,9 @@ module.exports.findSensorWithDes = function (des ) {
     });
 };
 
-module.exports.updateSensorInfo = function (routerNumber, sensorNumber, discreption, low_pass, high_pass, saving_local, saving_web) {
+module.exports.updateSensorInfo = function (routerNumber, sensorNumber, discreption, low_pass, high_pass, saving_local, saving_web, onRoof, onGround) {
    console.log('updateSensorInfo');
-   var sql = `UPDATE Sensors SET discreption = "`+discreption+`", low_pass = "`+low_pass+`", high_pass = "`+high_pass+`", saving_local = `+saving_local+`, saving_web = `+saving_web+` WHERE router_number = `+routerNumber+` and sensor_number = `+sensorNumber ;
+   var sql = `UPDATE Sensors SET discreption = "`+discreption+`", low_pass = "`+low_pass+`", high_pass = "`+high_pass+`", saving_local = `+saving_local+`", onRoof = `+onRoof+`", onGround = `+onGround+`, saving_web = `+saving_web+` WHERE router_number = `+routerNumber+` and sensor_number = `+sensorNumber ;
    console.log(sql);
    db.get(sql, [], (err, row) => {
         if (err) {
