@@ -42,6 +42,7 @@ public:
     void runTest();
     void stopTest();
     void colibrate();
+    void getSensorOffset(int rooterNum, int sensorNum, int *xOffset, int *yOffset, int *zOffset);
     int getSensorLoss(int router_num, int sensor_num, int sensorLossTemp);
     Q_INVOKABLE float getSensorXmin();
     Q_INVOKABLE float getSensorXmax();

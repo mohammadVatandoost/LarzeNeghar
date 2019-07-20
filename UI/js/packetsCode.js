@@ -26,7 +26,8 @@ var packetsCode = {
     fft_chart_second: "fft_chart_second",
     chart1FFT: "chart1FFT",
     chart2FFT: "chart2FFT",
-    chart3FFT: "chart3FFT"
+    chart3FFT: "chart3FFT",
+    colibrateType: "colibrateType"
 } 
 
 // connection state

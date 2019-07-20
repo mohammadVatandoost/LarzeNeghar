@@ -29,7 +29,8 @@ SOURCES += \
     Biquad.cpp \
     Butterworth.cpp \
     jsonfileapi.cpp \
-    algorithmthread.cpp
+    algorithmthread.cpp \
+    LowPassFilter.cpp
 
 LIBS += /usr/local/lib/libfftw3.a
 
@@ -49,4 +50,5 @@ HEADERS += \
     Biquad.h \
     Butterworth.h \
     jsonfileapi.h \
-    algorithmthread.h
+    algorithmthread.h \
+    LowPassFilter.hpp

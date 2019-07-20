@@ -6,6 +6,7 @@ const packetsCode = require('./js/packetsCode');
 const db = require('./js/dataBase');
 const { exec } = require('child_process');
 var sensors = [];
+var activateAlgorithm = true;
 // runDBTest(db);
 
 
@@ -139,9 +140,9 @@ ipc.on('chartsApply', function(event,arg) {
          chartsTemp.push({"R": response.router_number, "S": response.sensor_number, "B": charts[i].B});
          if(charts.length === chartsTemp.length) {
            sendmessage["charts"] = chartsTemp;
-           console.log(sendmessage + "***");
+           console.log(JSON.stringify(sendmessage) + "***");
            if(serverSocket !== null) {
-              serverSocket.write(sendmessage + "***");
+              serverSocket.write(JSON.stringify(sendmessage) + "***");
            }
          }
        }).catch((err) => {
@@ -151,9 +152,9 @@ ipc.on('chartsApply', function(event,arg) {
   }
   if(charts.length === chartsTemp.length) {
     sendmessage["charts"] = chartsTemp;
-    console.log(sendmessage + "***");
+    console.log(JSON.stringify(sendmessage) + "***");
     if(serverSocket !== null) {
-        serverSocket.write(sendmessage + "***");
+        serverSocket.write(JSON.stringify(sendmessage) + "***");
     }
   }
 });
@@ -198,24 +199,28 @@ ipc.on('stopAlarm', function(event,arg) {
     }
 });
 
+// stop alarm
+ipc.on('colibrate', function(event,arg) {
+    var temp = {};
+    temp[packetsCode.packetType] = packetsCode.colibrateType;
+    console.log("colibrate : "+JSON.stringify(temp)+"***");
+    if(serverSocket !== null) {
+        serverSocket.write(JSON.stringify(temp) + "***");
+    }
+});
+
 // save sensor info
 ipc.on('saveSensorInfo', function(event,arg) {
   console.log("saveSensorInfo :"+arg);
   var temp = JSON.parse(arg);
   var sensorsInfo = temp.sensorsInfo;
-  var groundPosition = temp["groundPosition"];   var roofPosition = temp["roofPosition"];
+  // var groundPosition = temp["onGround"];   var roofPosition = temp["onRoof"];
     for(var i=0; i<sensorsInfo.length ; i++) {
-      if( (groundPosition["R"] === sensorsInfo[i].router_number) && (groundPosition["S"] === sensorsInfo[i].sensor_number) &&
-          (roofPosition["R"] === sensorsInfo[i].router_number) && (roofPosition["S"] === sensorsInfo[i].sensor_number) ) {
-          db.updateSensorInfo(sensorsInfo[i].router_number, sensorsInfo[i].sensor_number, sensorsInfo[i].discreption, sensorsInfo[i].low_pass, sensorsInfo[i].high_pass, sensorsInfo[i].saving_local, 0, 1, 1);
-      } else if( (groundPosition["R"] === sensorsInfo[i].router_number) && (groundPosition["S"] === sensorsInfo[i].sensor_number) ) {
-          db.updateSensorInfo(sensorsInfo[i].router_number, sensorsInfo[i].sensor_number, sensorsInfo[i].discreption, sensorsInfo[i].low_pass, sensorsInfo[i].high_pass, sensorsInfo[i].saving_local, 0, 0, 1);
-      } else if( (roofPosition["R"] === sensorsInfo[i].router_number) && (roofPosition["S"] === sensorsInfo[i].sensor_number) ) {
-          db.updateSensorInfo(sensorsInfo[i].router_number, sensorsInfo[i].sensor_number, sensorsInfo[i].discreption, sensorsInfo[i].low_pass, sensorsInfo[i].high_pass, sensorsInfo[i].saving_local, 0, 1, 0);
-      } else {
-          db.updateSensorInfo(sensorsInfo[i].router_number, sensorsInfo[i].sensor_number, sensorsInfo[i].discreption, sensorsInfo[i].low_pass, sensorsInfo[i].high_pass, sensorsInfo[i].saving_local, 0, 0, 0);
-      }
+       db.updateSensorInfo(sensorsInfo[i].router_number, sensorsInfo[i].sensor_number, sensorsInfo[i].discreption,
+        sensorsInfo[i].low_pass, sensorsInfo[i].high_pass, sensorsInfo[i].saving_local, 0,
+         sensorsInfo[i].onRoof, sensorsInfo[i].onGround);  
     }
+    activateAlgorithm = temp["activateAlgorithm"]
   temp[packetsCode.packetType] = packetsCode.sensorsInfo;
     if(serverSocket !== null) {
         serverSocket.write(JSON.stringify(temp) + "***");
@@ -225,19 +230,19 @@ ipc.on('saveSensorInfo', function(event,arg) {
 // socket packet controller
 function decodeSocketPacket(data) {
   data = data + ''; //convert to string
-  console.log("decodeSocketPacket : "+data);
+  // console.log("decodeSocketPacket : "+data);
   if(data.includes("***")) {
     // console.log("data.includes(***) :");
     var packets = data.split("***");
     // console.log(packets.length);
     for(var i=0; i<packets.length-1; i++) {  // -1 for split last
       var dataTemp = JSON.parse(packets[i]) ;
-      console.log(i+" packet : "+packets[i]);
+      // console.log(i+" packet : "+packets[i]);
       // console.log("decodeSocketPacket dataTemp.packetType: "+dataTemp.packetType + " packetsCode.newSensor :"+packetsCode.newSensorPacket);
       if(dataTemp.packetType === packetsCode.connectionStateType) {
         
       } else if(dataTemp.packetType === packetsCode.receiveChartDataType) {
-        console.log("receiveChartDataType");console.log(packets[i]);
+        // console.log("receiveChartDataType");console.log(packets[i]);
           if(win.webContents !== null) {
               win.webContents.send('sensor-data', packets[i]);
           }
@@ -262,6 +267,7 @@ function decodeSocketPacket(data) {
                sensorsInfo.push(row);
                var sendData = {"sensorsInfo": sensorsInfo};
                sendData[packetsCode.packetType] = packetsCode.sensorsInfo;
+               sendData["activateAlgorithm"] = activateAlgorithm;
                sensors.push(row);
                console.log("sensorInfo from dataBase : " + JSON.stringify(row));
                var tcpSocketData = JSON.stringify(sendData) + "***";
@@ -300,7 +306,7 @@ function decodeSocketPacket(data) {
               }
           }
       } else if(dataTemp.packetType === packetsCode.sensorsInfoType) {
-          console.log("sensorsInfoType");
+          // console.log("sensorsInfoType");
           if(win.webContents !== null) {
               win.webContents.send('update-battery-signal', packets[i]);
           }

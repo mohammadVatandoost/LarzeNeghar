@@ -341,9 +341,10 @@ chartApply.addEventListener('click', function () {
       window.FFTLine.update();
       console.log("window.myLine.update(); ");
    }
-   // console.log('FFT');
+   var sendMessage = JSON.stringify({charts: charts, 'packetType': 'selectChartsType', 'fft_chart_second': $('#FFT').val() }) ;
+   console.log(sendMessage);
   // console.log($('#FFT').val());
-  ipc.send('chartsApply', JSON.stringify({charts: charts, 'packetType': 'selectChartsType', 'fft_chart_second': $('#FFT').val() }) );
+  ipc.send('chartsApply', sendMessage );
     notifier.notify({
         title: 'Notification',
         message: 'Chart Apply'

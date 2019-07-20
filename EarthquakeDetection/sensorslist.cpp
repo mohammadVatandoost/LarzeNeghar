@@ -57,11 +57,19 @@ void SensorsList::updateSensorInfo(QJsonObject temp)
     int sensorNum = temp.value("sensor_number").toInt();
     for(int i=0; i<sensorItems.length(); i++) {
         if( (sensorItems[i].routerNumber == routerNum) && (sensorItems[i].sensorNumber == sensorNum) ) {
+            sensorItems[i].onGroundSensor = false; sensorItems[i].onRoofSensor = false;
             if(temp.value("saving_local").toInt() == 1) {
-                sensorItems[i].savingOnLocal = true;
+               sensorItems[i].savingOnLocal = true;
             } else { sensorItems[i].savingOnLocal = false; }
 
-            qDebug()<< "updateSensorInfo : " << routerNum << " , " << sensorNum << " , saving_local:" <<sensorItems[i].savingOnLocal;
+            if(temp.value("onRoof").toInt() == 1) {
+               sensorItems[i].onRoofSensor = true;
+            } else { sensorItems[i].onRoofSensor = false; }
+
+            if(temp.value("onGround").toInt() == 1) {
+               sensorItems[i].onGroundSensor = true;
+            } else { sensorItems[i].onGroundSensor = false; }
+            qDebug()<< "updateSensorInfo : " << routerNum << " , " << sensorNum << " , saving_local:" <<sensorItems[i].savingOnLocal<< " , onGroundSensor:" <<sensorItems[i].onGroundSensor<< " , onRoofSensor:" <<sensorItems[i].onRoofSensor;
 //            qDebug()<< "updateSensorInfo : " << temp.value("saving_local").toBool() << " , " << temp.value("saving_local").toString()<< " , " << ;
 //            break;
         }
@@ -253,6 +261,24 @@ void SensorsList::colibrate()
     }
 }
 
+void SensorsList::getSensorOffset(int rooterNum, int sensorNum, int *xOffset, int *yOffset, int *zOffset)
+{
+    *xOffset = 0; *yOffset = 0; *zOffset = 0;
+    for(int i=0; i<sensorItems.length(); i++) {
+        if( (sensorItems[i].routerNumber == rooterNum) && (sensorItems[i].sensorNumber == sensorNum)  ) {
+            if((sensorItems[i].bordar == "x")) {
+               *xOffset = sensorItems[i].offset  ;
+            }
+            if((sensorItems[i].bordar == "y")) {
+               *yOffset = sensorItems[i].offset  ;
+            }
+            if((sensorItems[i].bordar == "z")) {
+               *zOffset = sensorItems[i].offset  ;
+            }
+        }
+    }
+}
+
 int SensorsList::getSensorLoss(int router_num, int sensor_num, int sensorLossTemp)
 {
     for(int i=0; i<sensorItems.length(); i++) {
@@ -260,7 +286,7 @@ int SensorsList::getSensorLoss(int router_num, int sensor_num, int sensorLossTem
             sensorItems[i].addSensorLoss(sensorLossTemp);
             int temp = sensorItems[i].getSensorLossAverage();
             if(temp>7) {sensorItems[i].isConnected = false;} else {sensorItems[i].isConnected = true;}
-            return temp;
+            return temp  ;
         }
     }
     return 0;

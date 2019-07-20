@@ -195,7 +195,7 @@ void BackEnd::decodeJSON(QString message) {
         routerMinute = qJsonObject.value(Router_minute).toString().toInt();
         routerSecnd = qJsonObject.value(Router_second).toString().toInt();
         routerMiliSec = qJsonObject.value(Router_milisec).toString().toInt();
-         qDebug() <<"minute:" <<routerMinute<< " , routerSecnd:" << routerSecnd << ",routerMiliSec:" << routerMiliSec ;
+//         qDebug() <<"minute:" <<routerMinute<< " , routerSecnd:" << routerSecnd << ",routerMiliSec:" << routerMiliSec ;
         routerBattery=qJsonObject.value(Router_Battery_Level).toString().toInt();
         checkSum = qJsonObject.value(Data_Check_SUM).toString().toInt();
         packetLengh = qJsonObject.value(Router_Packet_Lenth).toString().toInt();
@@ -206,7 +206,7 @@ void BackEnd::decodeJSON(QString message) {
         qDebug() << "decodeJSON : ACK";
     }
     else if(qJsonObject.contains(Sensors_settings)) {
-        qDebug() << "decodeJSON : request time";
+//        qDebug() << "decodeJSON : request time";
         sendInitialize();
     }
 
@@ -230,14 +230,14 @@ void BackEnd::decodeJSON(QString message) {
 
 void BackEnd::sendSerial(QString temp)
 {
-    qDebug() << "function start :" << "sendSerial";
+//    qDebug() << "function start :" << "sendSerial";
     QByteArray tx_data; tx_data.append(temp);
     serial->write(tx_data);
 }
 
 void BackEnd::sendInitialize()
 {
-    qDebug() << "function start :" << "sendInitialize";
+//    qDebug() << "function start :" << "sendInitialize";
     updateTime();
     QJsonObject qJsonObject;
     qJsonObject.insert(Sensors_settings, "?");
@@ -245,7 +245,7 @@ void BackEnd::sendInitialize()
     qJsonObject.insert(Time_Second,second);
     qJsonObject.insert(Time_Mili_Second,miliSecond);
     qJsonObject.insert("ALM", 0);
-    qDebug() << "sendInitialize : " << jsonToString(qJsonObject);
+//    qDebug() << "sendInitialize : " << jsonToString(qJsonObject);
     sendSerial(jsonToString(qJsonObject)) ;
 }
 
@@ -395,9 +395,9 @@ void BackEnd::decodeByteArrayType2()
         int couterCheck = 0;
 //          qDebug()<< "routerNum : " << routerNum << " , UID : "<< UID ;
         if(checkDataSendToChart1()) {
-              qDebug()<< "checkDataSendToChart1()";
+//              qDebug()<< "checkDataSendToChart1()";
             if(chart1Bordar == 'X') {
-                 qDebug()<< "routerNum : " << routerNum << " , UID : "<< UID ;
+//                 qDebug()<< "routerNum : " << routerNum << " , UID : "<< UID ;
                 qJsonObjectTemp.insert("chart1", xBordar);couterCheck++;
             } else if(chart1Bordar == 'Y') {
                 qJsonObjectTemp.insert("chart1", yBordar);couterCheck++;
@@ -421,7 +421,7 @@ void BackEnd::decodeByteArrayType2()
         }
         if(couterCheck > 0) {
           QJsonDocument doc(qJsonObjectTemp);
-            qDebug() << "send data for chart :"<< doc.toJson(QJsonDocument::Compact);
+//            qDebug() << "send data for chart :"<< doc.toJson(QJsonDocument::Compact);
           pSocket->write(doc.toJson(QJsonDocument::Compact)+"***");
         }
     }
@@ -622,6 +622,10 @@ void BackEnd::newDecode()
         if((int)dataByte[i] == -1) {sensorBatteryLevel = "-";}
         i++;
         sensorLossLevel = QString::number(mList->getSensorLoss(routerNum, UID, (int)dataByte[i])); i++;
+        int xOffset, yOffset, zOffset;
+        mList->getSensorOffset(routerNum, UID, &xOffset, &yOffset, &zOffset);
+//        qDebug()<<routerNum << ","<< UID << " offsets :"<<xOffset << " , " << yOffset << " , "<< zOffset;
+//        int xOffset = getSensorOffset()
         // for TCP socket
         QJsonObject qJsonObjectTemp, sensorInfo;
         qJsonObjectTemp.insert(packetType, receiveChartDataType);
@@ -642,17 +646,20 @@ void BackEnd::newDecode()
             int j = i+60;
             while(i<j) {
                 int xData = (((signed char)dataByte[i] & 0xff) | ((signed char)dataByte[i + 1] << 8))*3.9;
+                xData = xData - xOffset;
                 i++;i++;
                 xBordar.append(xData);
                 mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "x", xData, dataNumber);
 
                 int yData = (((signed char)dataByte[i] & 0xff) | ((signed char)dataByte[i + 1] << 8))*3.9;
+                yData = yData - yOffset;
                 i++;i++;
 //                 qDebug() << "YData : " << yData ;
                 yBordar.append(yData);
                 mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "y", yData, dataNumber);
 
                 int zData = (((signed char)dataByte[i] & 0xff) | ((signed char)dataByte[i + 1] << 8))*3.9;
+                zData = zData - zOffset;
                 i++;i++;
                 zBordar.append(zData);
                 mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "z", zData, dataNumber);
@@ -671,10 +678,11 @@ void BackEnd::newDecode()
                 } else {
                     xData = (((signed char)dataByte[i] & 0xff) | (((signed char)dataByte[i + 1] & 0xff) << 8) | (((signed char)dataByte[i+2] & 0xff) << 16) );
                 }
+                xData = (xData/pow(2,7)) - xOffset;
 //                int xData = (((signed char)dataByte[i] & 0xff) | (((signed char)dataByte[i + 1] & 0xff) << 8) | (((signed char)dataByte[i + 2] & 0xff) << 16));
                 i++;i++;i++;
-                xBordar.append(xData/pow(2,7));
-                mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "x", xData/pow(2, 7), dataNumber);
+                xBordar.append(xData);
+                mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "x", xData, dataNumber);
 
                 int yData;
                 if( (dataByte[i+2] & 0xf0) == 0xf0) {
@@ -682,11 +690,12 @@ void BackEnd::newDecode()
                 } else {
                     yData = (((signed char)dataByte[i] & 0xff) | (((signed char)dataByte[i + 1] & 0xff) << 8) | (((signed char)dataByte[i+2] & 0xff) << 16) );
                 }
+                yData = (yData/pow(2, 7)) - yOffset;
 //                qDebug() << "YData : " << yData;
                 i++;i++;i++;
 
-                yBordar.append(yData/pow(2, 7));
-                mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "y", yData/pow(2, 7), dataNumber);
+                yBordar.append(yData);
+                mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "y", yData, dataNumber);
 
 //                int zData = (((signed char)dataByte[i] & 0xff) | (((signed char)dataByte[i + 1] & 0xff) << 8) | (((signed char)dataByte[i + 2] & 0xff) << 16));
                 int zData;
@@ -695,9 +704,10 @@ void BackEnd::newDecode()
                 } else {
                     zData = (((signed char)dataByte[i] & 0xff) | (((signed char)dataByte[i + 1] & 0xff) << 8) | (((signed char)dataByte[i+2] & 0xff) << 16) );
                 }
+                zData = (zData/pow(2,7)) - zOffset;
                 i++;i++;i++;
-                zBordar.append(zData/pow(2,7));
-                mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "z", zData/pow(2, 7), dataNumber);
+                zBordar.append(zData);
+                mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "z", zData, dataNumber);
 
                 dataNumber++;
             }
@@ -750,9 +760,9 @@ void BackEnd::sendChartData(QJsonObject tempQJsonObject, int sensorUID, QJsonArr
     int couterCheck = 0;
 //          qDebug()<< "routerNum : " << routerNum << " , UID : "<< UID ;
     if(checkDataSendToChart1()) {
-          qDebug()<< "checkDataSendToChart1()";
+//          qDebug()<< "checkDataSendToChart1()";
         if(chart1Bordar == 'X') {
-             qDebug()<< "routerNum : " << routerNum << " , UID : "<< UID ;
+//             qDebug()<< "routerNum : " << routerNum << " , UID : "<< UID ;
             tempQJsonObject.insert("chart1", calculateAverage(xBordar, &chart_fft1) );couterCheck++;
             tempQJsonObject.insert(chart1FFT, calculateFFT(chart_fft1) );
         } else if(chart1Bordar == 'Y') {
@@ -1039,6 +1049,10 @@ void BackEnd::readTcpData()
             mList->colibrate();
         } else if(qJsonObject.value(packetType) == sensorsInfo) {
            QJsonArray sensorsInfoArray = qJsonObject.value("sensorsInfo").toArray();
+//           int roofRouterNum = qJsonObject.value("onRoof").toObject().value("R").toString().toInt();
+//           int roofSensorNum = qJsonObject.value("onRoof").toObject().value("S").toString().toInt();
+//           int groundRouterNum = qJsonObject.value("onGround").toObject().value("R").toString().toInt();
+//           int groundSensorNum = qJsonObject.value("onGround").toObject().value("S").toString().toInt();
            for(int i=0; i< sensorsInfoArray.size();i++) {
               QJsonObject tempQJSONObject = sensorsInfoArray.at(i).toObject();
               mList->updateSensorInfo(tempQJSONObject);

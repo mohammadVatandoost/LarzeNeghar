@@ -97,28 +97,28 @@ QVector<double> Algorithm::bandPassFilter(QVector<double> data)
 
     h, a bandpass FIR filter in the form of an N-element array */
 
-    {
+//    {
 
     //Normalize f_c and ω _c so that pi is equal to the Nyquist angular frequency
 
-      int f1_c = f1/fs;
-      int f2_c = f2/fs;
+//      int f1_c = f1/fs;
+//      int f2_c = f2/fs;
 
-      int ω1_c = 2*pi*f1_c;
+//      int ω1_c = 2*pi*f1_c;
 
-      int ω2_c = 2*pi*f2_c;
-      int N = 4 ; // filter order
-      int middle = N/2;    /*Integer division, dropping remainder*/
+//      int ω2_c = 2*pi*f2_c;
+//      int N = 4 ; // filter order
+//      int middle = N/2;    /*Integer division, dropping remainder*/
 
-      for i = −N/2 to N/2
+//      for i = −N/2 to N/2
 
-       if (i == 0) h(middle) = 2*(f2_c – f1_c)
+//       if (i == 0) h(middle) = 2*(f2_c – f1_c)
 
-       else
+//       else
 
-      h(i + middle) = sin(ω2_c*i)/(pi*i) – sin(ω1_c*i)/(pi*i)
+//      h(i + middle) = sin(ω2_c*i)/(pi*i) – sin(ω1_c*i)/(pi*i)
 
-     }
+//     }
 }
 
 QVector<int> Algorithm::absVector(QVector<int> temp)

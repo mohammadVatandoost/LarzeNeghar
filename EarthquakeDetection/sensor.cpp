@@ -9,21 +9,21 @@ Sensor::Sensor(int cN, int rN, int sN, QString b)
         sensorType="ADX345";
     }
 
-    QString SBFH,SBFL;
-    QFile jsonFile("defaultChannelSettings");
-    jsonFile.open(QFile::ReadOnly);
-    QString jString=jsonFile.readAll();
-    jsonFile.close();
-    QJsonDocument jdefaultSetting= QJsonDocument::fromJson(jString.toUtf8());
-    QJsonObject jObjectSetting = jdefaultSetting.object();
-    if(jObjectSetting.contains("Desc"+QString::number(sensorNumber)))
-        Defaultdescription=description=jObjectSetting.value("Desc"+QString::number(sensorNumber)).toString();
-    if(jObjectSetting.contains("SSR"+QString::number(sensorNumber)))
-        sampleRate=DefaultsampleRate=jObjectSetting.value("SSR"+QString::number(sensorNumber)).toInt();
-    if(jObjectSetting.contains("SBFH"+QString::number(sensorNumber)))
-        SBFH=jObjectSetting.value("SBFH"+QString::number(sensorNumber)).toString();
-    if(jObjectSetting.contains("SBFL"+QString::number(sensorNumber)))
-        SBFL=jObjectSetting.value("SBFL"+QString::number(sensorNumber)).toString();
+//    QString SBFH,SBFL;
+//    QFile jsonFile("defaultChannelSettings");
+//    jsonFile.open(QFile::ReadOnly);
+//    QString jString=jsonFile.readAll();
+//    jsonFile.close();
+//    QJsonDocument jdefaultSetting= QJsonDocument::fromJson(jString.toUtf8());
+//    QJsonObject jObjectSetting = jdefaultSetting.object();
+//    if(jObjectSetting.contains("Desc"+QString::number(sensorNumber)))
+//        Defaultdescription=description=jObjectSetting.value("Desc"+QString::number(sensorNumber)).toString();
+//    if(jObjectSetting.contains("SSR"+QString::number(sensorNumber)))
+//        sampleRate=DefaultsampleRate=jObjectSetting.value("SSR"+QString::number(sensorNumber)).toInt();
+//    if(jObjectSetting.contains("SBFH"+QString::number(sensorNumber)))
+//        SBFH=jObjectSetting.value("SBFH"+QString::number(sensorNumber)).toString();
+//    if(jObjectSetting.contains("SBFL"+QString::number(sensorNumber)))
+//        SBFL=jObjectSetting.value("SBFL"+QString::number(sensorNumber)).toString();
 //    bandpassFilter=DefaultbandpassFilter=SBFL+"-"+SBFH;
 
 }
@@ -81,9 +81,10 @@ void Sensor::addData(int year, int month, int day, int hour, int minute, int sec
     }
     if(counter == average_number) {
         offset = sum / average_number ;
+        qDebug()<< "sensor R"<<routerNumber<<" , S"<<sensorNumber<<" , "<<bordar <<" offset :" << offset;
         counter++;
     }
-    SensorData temp(minute, second, miliSecond, value-offset);
+    SensorData temp(minute, second, miliSecond, value);
     if(year == 0) {yearBuff = year; monthBuff = month; dayBuff = day; hourBuff = hour; minuteBuff = minute;}
     if( (hourBuff != hour) && (savingOnLocal) && (isConnected) ) {
         qDebug()<< "storing to file add data hourBuff:"<< hourBuff << " , "<< hour ;
@@ -108,9 +109,12 @@ void Sensor::addData(int year, int month, int day, int hour, int minute, int sec
     }
     // for algorithm
     dataBuffer.append(temp);
-    alghorithmDataBuffer.append(abs(value-offset));
+    alghorithmDataBuffer.append(abs(value));
     if(earthquackHappen) {
-        if(dataBuffer.length() == (dataBufferCounterLimit + dataBufferAfetrLimit) ) {
+//        if( (dataBuffer.length() % 1000) == 0) {
+//           qDebug()<<routerNumber << ","<<sensorNumber<< " : " << dataBuffer.length();
+//        }
+        if(dataBuffer.length() >= (dataBufferCounterLimit + dataBufferAfetrLimit) ) {
             QVector<QStringList> dataStringList;
             for(int j = 0; j<dataBuffer.length(); j++) {
                 QStringList listRow;
@@ -122,6 +126,7 @@ void Sensor::addData(int year, int month, int day, int hour, int minute, int sec
             dataBuffer.clear();
             alghorithmDataBuffer.clear();
             earthquackHappen = false;
+            qDebug()<< "sensor class eqrthquake data stored";
         }
     } else {
        while(dataBuffer.length() > dataBufferCounterLimit) {dataBuffer.remove(0);alghorithmDataBuffer.remove(0);}

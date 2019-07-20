@@ -10,14 +10,15 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <sensordata.h>
-
+//#include "LowPassFilter.hpp"
 //struct SensorData {
 //    int dataAccelarator;
 //    int time;
 //};
+#define sampling_frequency 100
 #define average_number 1000
-#define dataBufferCounterLimit 30000 // for 30 seconds
-#define dataBufferAfetrLimit 120000 // for 120 seconds (after eqthrquake detected)
+#define dataBufferCounterLimit 3000 // for 30 seconds
+#define dataBufferAfetrLimit 12000 // for 120 seconds (after eqthrquake detected)
 
 class Sensor
 {
@@ -72,6 +73,11 @@ public:
     int min = 0;
     int max = 0;
     int offset = 0;
+    // bandpass filter
+//    int f1 = 0.1;
+//    int f2 = 15;
+//    LowPassFilter lpf1(1.0, 0.01);
+//    LowPassFilter lpf2(1.0, 0.01);
 
 };
 
