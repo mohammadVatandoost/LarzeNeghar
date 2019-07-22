@@ -11,9 +11,52 @@ var db = new sqlite3.Database('./dataBase.db', (err) => {
     // db.run('CREATE TABLE IF NOT EXISTS SensorsData (id INTEGER PRIMARY KEY AUTOINCREMENT, router_number INTEGER NOT NULL, sensor_number INTEGER NOT NULL, discreption TEXT, saving_local INTEGER DEFAULT 0, saving_web INTEGER DEFAULT 0 )');
     // create Earthquake table
     db.run('CREATE TABLE IF NOT EXISTS Earthquakes (id INTEGER PRIMARY KEY AUTOINCREMENT, date_time TEXT, estimated_magnitude TEXT, PGA_L1 TEXT, PGA_L2 TEXT, PGA_V TEXT, PBA_L1 TEXT, PBA_L2 TEXT, PBA_V TEXT, discreption TEXT )');
+    //create Table for EEW configuration
+    db.run('CREATE TABLE IF NOT EXISTS EEWConfig (id INTEGER PRIMARY KEY AUTOINCREMENT, accTreshold TEXT, highPass TEXT, lowPass TEXT, longPoint TEXT, shortPoint TEXT, staLtaTreshold TEXT, winLength TEXT )');
+
 });
 
 module.exports.dataBase = db;
+
+// just use first row of config
+module.exports.findEEWConfig = function () {
+    console.log("findFirstConfig");
+    var sql = 'SELECT * FROM EEWConfig WHERE id=1';
+    return new Promise((resolve, reject) => {
+        db.get(sql, [], (err, row) => {
+          if (err) {
+             reject(err); // optional: you might choose to swallow errors.
+             // return console.log(err.message);
+          } else {
+            resolve(row);
+          }
+        });
+    });
+};
+// insert config just for one time
+module.exports.insertConfig = function (accTreshold, highPass, lowPass, longPoint, shortPoint, staLtaTreshold, winLength) {
+    console.log("insertNewSensor");
+    // insert one row into the langs table
+    db.run(`INSERT INTO EEWConfig(accTreshold, highPass, lowPass, longPoint, shortPoint, staLtaTreshold, winLength) VALUES(`+accTreshold+`,`+highPass+`,`+lowPass+`,`+longPoint+`,`+shortPoint+`,`+staLtaTreshold+`,`+winLength+` )`, [], function(err) {
+        if (err) {
+            return console.log(err.message);
+        }
+        // get the last insert id
+        console.log(`A row has been inserted with rowid ${this.lastID}`);
+    });
+};
+
+module.exports.updateEEWConfig = function (accTreshold, highPass, lowPass, longPoint, shortPoint, staLtaTreshold, winLength) {
+    console.log("findFirstConfig");
+    var sql = `UPDATE EEWConfig SET accTreshold = "`+accTreshold+`", highPass = "`+highPass+`", lowPass = "`+lowPass+`", longPoint = "`+longPoint+`", shortPoint = "`+shortPoint+`", staLtaTreshold = "`+staLtaTreshold+`", winLength = "`+winLength+`" WHERE id = 1` ;
+    console.log(sql);
+    db.get(sql, [], (err, row) => {
+        if (err) {
+            return console.log(err.message);
+        }
+        console.log('EEWConfig updated');
+    });
+};
 
 module.exports.insertNewSensor = function (routerNumber, sensorNumber, low_pass, high_pass ) {
     console.log("insertNewSensor");
@@ -39,56 +82,20 @@ module.exports.checkNewSensor = function (sensorData ) {
             var response = {row: row, sensorData: sensorData}
             resolve(response);
           }
-          // if (typeof row !== 'undefined') {
-          //   console.log("checkNewSensor sensorInfo is in database");
-          //   console.log(row);
-          //   return row;
-          // } else {
-          //   console.log('sensor does not exist');
-          //   return false;
-          // } 
         });
-        // const db = new sqlite3.Database(database);
-        // const queries = [];
-        // db.each(`SELECT rowid as key, * FROM ${table}`, (err, row) => {
-        //     if (err) {
-        //         reject(err); // optional: you might choose to swallow errors.
-        //     } else {
-        //         queries.push(row); // accumulate the data
-        //     }
-        // }, (err, n) => {
-        //     if (err) {
-        //         reject(err); // optional: again, you might choose to swallow this error.
-        //     } else {
-        //         resolve(queries); // resolve the promise
-        //     }
-        // });
     });
-    // db.get(sql, [], (err, row) => {
-    //     if (err) {
-    //         return console.log(err.message);
-    //     }
-    //     if (typeof row !== 'undefined') {
-    //       console.log("checkNewSensor sensorInfo is in database");
-    //       console.log(row);
-    //       return row;
-    //     } else {
-    //       console.log('sensor does not exist');
-    //       return false;
-    //     }
-    // });
 };
 
-module.exports.findSensorWithDes = function (des ) {
-    console.log("checkNewSensor");
-    var sql = 'SELECT * FROM Sensors WHERE discreption='+des;
+module.exports.findSensorWithDes = function (des, bordar ) {
+    console.log("findSensorWithDes");
+    var sql = 'SELECT * FROM Sensors WHERE discreption="'+des+'"';
     return new Promise((resolve, reject) => {
         db.get(sql, [], (err, row) => {
           if (err) {
              reject(err); // optional: you might choose to swallow errors.
              // return console.log(err.message);
           } else {
-            var response = {sensorData: row}
+            var response = {sensorData: row, Bordar: bordar}
             resolve(response);
           }
         });

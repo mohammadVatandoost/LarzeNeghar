@@ -8,12 +8,12 @@ var connected = false;
 
 const ipc = electron.ipcRenderer;
 var sensorsList = [] ;
-const dsp = require("./dsp.js");
-var fft = new dsp.FFT(8, 1);
- console.log(fft.forward([1, 2, 3, 4, 5, 6, 7, 8]));
-   var spectrum = fft.spectrum;
-    console.log("FFT :");
-    console.log(spectrum);
+// const dsp = require("./dsp.js");
+// var fft = new dsp.FFT(8, 1);
+//  console.log(fft.forward([1, 2, 3, 4, 5, 6, 7, 8]));
+//    var spectrum = fft.spectrum;
+//     console.log("FFT :");
+//     console.log(spectrum);
 
 
 // get new sensor data 
@@ -38,12 +38,14 @@ ipc.on('new-sensor',function(event,arg) {
     if(arg.onRoof === 1) {console.log("onRoof"); $("#roofPosition").val("R"+arg.router_number+",S"+arg.sensor_number);}
     if(arg.onGround === 1) {console.log("onGround");$("#groundPosition").val("R"+arg.router_number+",S"+arg.sensor_number);}
 
+// <td><input id="low_pass`+sensorCounter+`" type="text" value="`+arg.low_pass+`" class="form-control"></td>
+//         <td><input id="high_pass`+sensorCounter+`" type="text" value="`+arg.high_pass+`" class="form-control"></td>
+
 	var temp = `
 		<tr class="sensorInfo">
          <td class="text-center">`+arg.id+`</td><td class="text-center">`+arg.router_number+`</td><td class="text-center">`+arg.sensor_number+`</td>
          <td><input id="discreption`+sensorCounter+`" type="text" value="`+arg.discreption+`" class="form-control" style="width: 300px;"></td><td id="routerBatteryLevel`+sensorCounter+`">`+arg.routerBatteryLevel+`</td><td id="sensorBatteryLevel`+sensorCounter+`">`+arg.sensorBatteryLevel+`</td>
-        <td id="antenSignal`+sensorCounter+`">`+arg.antenSignal+`</td><td><input id="low_pass`+sensorCounter+`" type="text" value="`+arg.low_pass+`" class="form-control"></td>
-        <td><input id="high_pass`+sensorCounter+`" type="text" value="`+arg.high_pass+`" class="form-control"></td>
+        <td id="antenSignal`+sensorCounter+`">`+arg.antenSignal+`</td>
         <td style="text-align: center;">
          <div class="form-check">
           <label class="form-check-label" style="padding-bottom: 5px;">`;
@@ -89,6 +91,16 @@ ipc.on('disconnected',function(event,arg) {
       });
     }
     connected = false;
+});
+
+// set EEWConfig
+ipc.on('set-EEWConfig',function(event,arg) {
+    var eew = JSON.parse(arg);
+    // $( "input[name='man']" ).val( "has man in it!" );
+    Object.keys(eew).forEach(function(key) {
+       $( "input[name='"+key+"']" ).val( eew[key] ); 
+       console.log(key+":"+eew[key]+ " , "+"input[name='"+key+"']");
+    });
 });
 
 // update-battery-signal
@@ -221,8 +233,10 @@ saveSensorInfo.addEventListener('click', function () {
             } else {
                 temp['saving_local'] = 0;
             }
-            temp['low_pass'] = $("#low_pass" + i).val();
-            temp['high_pass'] = $("#high_pass" + i).val();
+            // temp['low_pass'] = $("#low_pass" + i).val();
+            // temp['high_pass'] = $("#high_pass" + i).val();
+            temp['low_pass'] = 0;
+            temp['high_pass'] = 0;
             if( (parseInt(routerOnGround) === parseInt(sensorsList[i].router_number) ) && ( parseInt(sensorOnGround) === parseInt(sensorsList[i].sensor_number) ) ) {
                temp['onGround'] = 1 ; 
             } else {temp['onGround'] = 0 ;}

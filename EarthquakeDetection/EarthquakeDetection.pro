@@ -30,7 +30,10 @@ SOURCES += \
     Butterworth.cpp \
     jsonfileapi.cpp \
     algorithmthread.cpp \
-    LowPassFilter.cpp
+    LowPassFilter.cpp \
+    Cascade.cpp \
+    State.cpp \
+    PoleFilter.cpp
 
 LIBS += /usr/local/lib/libfftw3.a
 
@@ -51,4 +54,10 @@ HEADERS += \
     Butterworth.h \
     jsonfileapi.h \
     algorithmthread.h \
-    LowPassFilter.hpp
+    LowPassFilter.hpp \
+    Common.h \
+    Cascade.h \
+    State.h \
+    Types.h \
+    PoleFilter.h \
+    MathSupplement.h

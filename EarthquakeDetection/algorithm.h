@@ -39,6 +39,8 @@ public:
     void setParameters(float highPass, float lowPass, int longPoint, int shortWin, int staLtaTreshold, int winLength);
     void butterWorthTest();
     void getButterWorthCoeffs();
+    double trapz(QVector<double> temp);
+    double trapzWithPower2(QVector<double> temp);
     float runAlgorithm(QVector<double> data);
     QVector<double> bandPassFilter(QVector<double> data);
     QVector<int> absVector(QVector<int> temp);

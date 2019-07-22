@@ -7,6 +7,7 @@ const db = require('./js/dataBase');
 const { exec } = require('child_process');
 var sensors = [];
 var activateAlgorithm = true;
+var eewConfigBuffer;
 // runDBTest(db);
 
 
@@ -23,6 +24,7 @@ var serverSocket;
 // The sock object the callback function receives UNIQUE for each connection
 net.createServer(function(sock) {
   serverSocket = sock;
+  serverSocket.write(eewConfigBuffer + "***");
   // We have a connection - a socket object is assigned to the connection automatically
  console.log('CONNECTED: ' + sock.remoteAddress +':'+ sock.remotePort);
   // Add a 'data' event handler to this instance of socket
@@ -64,8 +66,26 @@ console.log('Server listening on ' + HOST +':'+ PORT);
     win.webContents.openDevTools()
 
     win.webContents.on('did-finish-load', () => {
-      //   console.log('did-finish-load');
-      // exec('start ./EarthquakeDetection/EarthquakeDetection.exe', (err, stdout, stderr) => {
+      db.findEEWConfig().then((response) => {
+         if (typeof response !== 'undefined') {
+          console.log("eewConfig");console.log(response);
+          eewConfigBuffer = JSON.stringify(response);
+          if(win.webContents !== null) {
+              win.webContents.send('set-EEWConfig', JSON.stringify(response));
+          }
+         } else {
+           var sendmessage= {};
+           sendmessage["accTreshold"] = "5"; sendmessage["highPass"] = "0.1"; sendmessage["lowPass"] = "15" ;
+           sendmessage["longPoint"] = "100"; sendmessage["shortPoint"] = "10"; sendmessage["staLtaTreshold"] = "5";
+           sendmessage["winLength"] = "3";
+           eewConfigBuffer = JSON.stringify(sendmessage);
+           db.insertConfig(sendmessage["accTreshold"], sendmessage["highPass"], sendmessage["lowPass"],
+            sendmessage["longPoint"], sendmessage["shortPoint"], sendmessage["staLtaTreshold"], sendmessage["winLength"]);
+           if(win.webContents !== null) {
+              win.webContents.send('set-EEWConfig', JSON.stringify(sendmessage));
+          }
+         }
+         // exec('start ./EarthquakeDetection/EarthquakeDetection.exe', (err, stdout, stderr) => {
       //     console.log("run exe");
       //     if (err) {
       //         console.error(err);
@@ -73,6 +93,8 @@ console.log('Server listening on ' + HOST +':'+ PORT);
       //     }
       //     console.log(stdout);
       // });
+      }).catch((err)=> {console.log(err);});
+      //   console.log('did-finish-load');
 
   });
   
@@ -122,22 +144,27 @@ ipc.on('eewConfig', function(event,arg) {
   var temp = arg ;
   temp[packetsCode.packetType] = packetsCode.eewConfigType ;
   console.log("eewConfig : " + arg);
+  db.updateEEWConfig(temp["accTreshold"], temp["highPass"], temp["lowPass"], temp["longPoint"], 
+    temp["shortPoint"], temp["staLtaTreshold"], temp["winLength"]);
     if(serverSocket !== null) {
-        serverSocket.write(temp + "***");
+        serverSocket.write(JSON.stringify(temp) + "***");
     }
 });
 
 // get charts
 ipc.on('chartsApply', function(event,arg) {
-  console.log("chartsApply");
+  console.log("chartsApply");console.log(arg);
   var temp = JSON.parse(arg);
   var charts = temp.charts;
   var sendmessage = {'packetType': 'selectChartsType', 'fft_chart_second': temp['fft_chart_second']};
   var chartsTemp = [];
   for(var i=0;i<charts.length; i++) {
     if(hasProperty(charts[i], "description")) {
-       db.findSensorWithDes(charts[i].description).then((response) => {
-         chartsTemp.push({"R": response.router_number, "S": response.sensor_number, "B": charts[i].B});
+      console.log("has description");
+      //console.log(charts[i]);console.log(charts[i]["B"]);console.log(charts[i].B);
+       db.findSensorWithDes(charts[i].description, charts[i].B).then((response) => {
+        console.log(response);
+         chartsTemp.push({"R": response.sensorData.router_number, "S": response.sensorData.sensor_number, "B": response.Bordar});
          if(charts.length === chartsTemp.length) {
            sendmessage["charts"] = chartsTemp;
            console.log(JSON.stringify(sendmessage) + "***");

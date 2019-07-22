@@ -38,6 +38,7 @@ public:
     void setSensorsSettings(int sensorNumber, QString sensorBordar, QString batteryLevel,int routerBatteryLevel);
     void setRoutersSettings(int routerNumber, QString batteryLevel);
     void setSensorFrequency(int sensorNumber, int sampleRate, QString bandpassFilter);
+    void setFilterFrequency(float f1, float f2);
     void addSensorInfoToCSV(Sensor newSensor);
     void runTest();
     void stopTest();

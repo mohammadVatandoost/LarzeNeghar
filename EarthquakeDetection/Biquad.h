@@ -1,95 +1,182 @@
+/**
+ *
+ * "A Collection of Useful C++ Classes for Digital Signal Processing"
+ * By Vinnie Falco and Bernd Porr
+ *
+ * Official project location:
+ * https://github.com/berndporr/iir1
+ *
+ * See Documentation.cpp for contact information, notes, and bibliography.
+ * 
+ * -----------------------------------------------------------------
+ *
+ * License: MIT License (http://www.opensource.org/licenses/mit-license.php)
+ * Copyright (c) 2009 by Vinnie Falco
+ * Copyright (c) 2011 by Bernd Porr
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ **/
+
+#ifndef IIR1_BIQUAD_H
+#define IIR1_BIQUAD_H
+
+#include "Common.h"
+#include "MathSupplement.h"
+#include "Types.h"
+
+namespace Iir {
+
+	struct DllExport BiquadPoleState;
+
 /*
- 
- This file is part of Butterworth Filter Design, a pair C++ classes and an
- accompanying suite of unit tests for designing high order Butterworth IIR &
- EQ filters using the bilinear transform.
- The generated filter coefficients are split out into cascaded biquad sections,
- for easy use in your garden variety biquad or second-order section (SOS).
- 
- Reference: http://en.wikipedia.org/wiki/Butterworth_filter
- http://www.musicdsp.org/files/Audio-EQ-Cookbook.txt
- 
- 
- Copyright (C) 2013,  iroro orife
- 
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
- 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- 
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
- 
+ * Holds coefficients for a second order Infinite Impulse Response
+ * digital filter. This is the building block for all IIR filters.
+ *
  */
+	class DllExport Biquad
+	{
+	public:
+		/**
+		 * Calculate filter response at the given normalized frequency.
+		 **/
+		complex_t response (double normalizedFrequency) const;
 
+		/**
+                 * Returns the pole / zero Pairs as a vector
+                 **/
+		std::vector<PoleZeroPair> getPoleZeros () const;
 
-#include <vector>
-#include <complex>
+		/**
+                 * Returns 1st IIR coefficient (usually one)
+                 **/
+		double getA0 () const { return m_a0; }
 
-using namespace std;
+		/**
+                 * Returns 2nd IIR coefficient
+                 **/
+		double getA1 () const { return m_a1*m_a0; }
 
-// A biquad filter expression:
-// y[n] = b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2];
+		/**
+                 * Returns 3rd IIR coefficient
+                 **/
+		double getA2 () const { return m_a2*m_a0; }
 
-class Biquad {
-    
-public:
-    Biquad();
-    ~Biquad();
-    
-    
-    // Coefficients are public, as client classes and test harnesses need direct access.
-    // Special accessors to better encapsulate data, would be less readable,
-    // so skipping for pedagogical reasons. Another idea would be to make this a struct.
-    //
-    double b0, b1, b2, a1, a2;  // second order section variable
-    double a3, a4, b3, b4;      // fourth order section variables
-    
-    
-    // Coefficients for a DF2T fourth order section (Used for EQ filters)
-    void DF2TFourthOrderSection(double B0, double B1, double B2, double B3, double B4,
-                                double A0, double A1, double A2, double A3, double A4);
-    
-    // Coefficients for a DF2T biquad section.
-    void DF2TBiquad(double B0, double B1, double B2,
-                    double A0, double A1, double A2);
-};
+		/**
+                 * Returns 1st FIR coefficient
+                 **/
+		double getB0 () const { return m_b0*m_a0; }
 
+		/**
+                 * Returns 2nd FIR coefficient
+                 **/
+		double getB1 () const { return m_b1*m_a0; }
 
+		/**
+                 * Returns 3rd FIR coefficient
+                 **/
+		double getB2 () const { return m_b2*m_a0; }
 
-class BiquadChain {
-    
-public:
-    
-    BiquadChain(int count);
-    
-    BiquadChain();
-    ~BiquadChain();
-    
-    void resize(int count);
-    void reset();
-    
-    // Process the biquad filter chain on the input buffer, write to output buffer
-    // buffers arrays contain count elements with a single stride separating successive elements.
-    void processBiquad(const float * input, float * output, const int stride, const int count, const Biquad * coeffs);
-    
-    // Extension for fourth order sections
-    void processFourthOrderSections(const float * input, float * output, int stride, int count, const Biquad * coeffs);
-    
-private:
-    
-    int numFilters;
-    double _xn1, _xn2;
-    vector <double> _yn, _yn1, _yn2;
-    
-    // Fourth order section variables
-    double xn3, xn4;
-    vector <double> _yn3, _yn4;
-    
-    void allocate(int count);
-};
+		/** 
+                 * Filter a sample with the coefficients provided here and the State provided as an argument.
+                 * \param s The sample to be filtered.
+                 * \param state The Delay lines (instance of a state from State.h)
+                 **/
+		template <class StateType>
+			inline double filter(double s, StateType& state) const
+		{
+			return state.filter(s, *this);
+		}
+
+	public:
+		/**
+                 * Sets all coefficients
+                 * \param a0 1st IIR coefficient
+                 * \param a1 2nd IIR coefficient
+                 * \param a2 3rd IIR coefficient
+                 * \param b0 1st FIR coefficient
+                 * \param b1 2nd FIR coefficient
+                 * \param b2 3rd FIR coefficient
+                 **/
+		void setCoefficients (double a0, double a1, double a2,
+				      double b0, double b1, double b2);
+
+		/**
+                 * Sets one (real) pole and zero. Throws exception if imaginary components.
+                 **/
+		void setOnePole (complex_t pole, complex_t zero);
+
+		/**
+                 * Sets two poles/zoes as a pair. Needs to be complex conjugate.
+                 **/
+		void setTwoPole (complex_t pole1, complex_t zero1,
+				 complex_t pole2, complex_t zero2);
+
+		/**
+		 * Sets a complex conjugate pair
+                 **/
+		void setPoleZeroPair (const PoleZeroPair& pair)
+		{
+			if (pair.isSinglePole ())
+				setOnePole (pair.poles.first, pair.zeros.first);
+			else
+				setTwoPole (pair.poles.first, pair.zeros.first,
+					    pair.poles.second, pair.zeros.second);
+		}
+
+		void setPoleZeroForm (const BiquadPoleState& bps);
+
+		/**
+                 * Sets the coefficiens as pass through. (b0=1,a0=1, rest zero)
+                 **/
+		void setIdentity ();
+
+		/**
+                 * Performs scaling operation on the FIR coefficients
+                 * \param scale Mulitplies the coefficients b0,b1,b2 with the scaling factor scale.
+                 **/
+		void applyScale (double scale);
+
+	public:
+		double m_a0;
+		double m_a1;
+		double m_a2;
+		double m_b1;
+		double m_b2;
+		double m_b0;
+	};
+
+//------------------------------------------------------------------------------
+
+	
+/** 
+ * Expresses a biquad as a pair of pole/zeros, with gain
+ * values so that the coefficients can be reconstructed precisely.
+ **/
+	struct DllExport BiquadPoleState : PoleZeroPair
+	{
+		BiquadPoleState () { }
+
+		explicit BiquadPoleState (const Biquad& s);
+
+		double gain;
+	};
+
+}
+	
+#endif

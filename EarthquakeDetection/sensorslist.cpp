@@ -228,7 +228,16 @@ void SensorsList::setSensorFrequency(int sensorNumber, int sampleRate, QString b
 //            sensorItems[i].sampleRate = sampleRate;
 //            sensorItems[i].bandpassFilter = bandpassFilter;
 //        }
-//    }
+    //    }
+}
+
+void SensorsList::setFilterFrequency(float f1, float f2)
+{
+    for(int i=0; i<sensorItems.length();i++) {
+        sensorItems[i].f1 = f1;
+        sensorItems[i].f2 = f2;
+        sensorItems[i].filterUpdate();
+    }
 }
 
 void SensorsList::addSensorInfoToCSV(Sensor newSensor)

@@ -10,11 +10,12 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <sensordata.h>
-//#include "LowPassFilter.hpp"
+#include "Butterworth.h"
 //struct SensorData {
 //    int dataAccelarator;
 //    int time;
 //};
+#define filter_order 4
 #define sampling_frequency 100
 #define average_number 1000
 #define dataBufferCounterLimit 3000 // for 30 seconds
@@ -73,12 +74,11 @@ public:
     int min = 0;
     int max = 0;
     int offset = 0;
-    // bandpass filter
-//    int f1 = 0.1;
-//    int f2 = 15;
-//    LowPassFilter lpf1(1.0, 0.01);
-//    LowPassFilter lpf2(1.0, 0.01);
-
+    // bandpass filter 
+    Iir::Butterworth::BandPass<filter_order> f;
+    float f1 = 0.1;
+    float f2 = 15;
+    void filterUpdate();
 };
 
 #endif // SENSOR_H

@@ -1034,6 +1034,8 @@ void BackEnd::readTcpData()
                   algorithmThread->setParameters(qJsonObject.value("highPass").toInt(), qJsonObject.value("lowPass").toInt(),
                                                  qJsonObject.value("longPoint").toInt(), qJsonObject.value("shortPoint").toInt(),
                                                  qJsonObject.value("staLtaTreshold").toInt(), qJsonObject.value("winLength").toInt());
+                  mList->setFilterFrequency(qJsonObject.value("highPass").toInt(),
+                                            qJsonObject.value("lowPass").toInt());
               }
         } else if(qJsonObject.value(packetType) == runTestType) {
             qDebug() << "runTest";

@@ -9,6 +9,8 @@ Sensor::Sensor(int cN, int rN, int sN, QString b)
         sensorType="ADX345";
     }
 
+    f.setup(sampling_frequency, (f1+f2)/2, f2-f1);
+
 //    QString SBFH,SBFL;
 //    QFile jsonFile("defaultChannelSettings");
 //    jsonFile.open(QFile::ReadOnly);
@@ -109,7 +111,7 @@ void Sensor::addData(int year, int month, int day, int hour, int minute, int sec
     }
     // for algorithm
     dataBuffer.append(temp);
-    alghorithmDataBuffer.append(abs(value));
+    alghorithmDataBuffer.append(abs(f.filter(value)));
     if(earthquackHappen) {
 //        if( (dataBuffer.length() % 1000) == 0) {
 //           qDebug()<<routerNumber << ","<<sensorNumber<< " : " << dataBuffer.length();
@@ -125,6 +127,7 @@ void Sensor::addData(int year, int month, int day, int hour, int minute, int sec
             appendDataToCSV(dataStringList, "./Data/Earthquake_R"+QString::number(routerNumber)+"S"+QString::number(sensorNumber)+bordar+"_"+QString::number(yearBuff)+"_"+QString::number(monthBuff)+"_"+QString::number(dayBuff)+"_"+QString::number(hourBuff)+".csv"); //"_"+QString::number(minuteBuff)+
             dataBuffer.clear();
             alghorithmDataBuffer.clear();
+            f.reset();
             earthquackHappen = false;
             qDebug()<< "sensor class eqrthquake data stored";
         }
@@ -174,4 +177,10 @@ void Sensor::stopTest()
     }
     appendDataToCSV(dataStringList, "./Data/Test_R"+QString::number(routerNumber)+"S"+QString::number(sensorNumber)+bordar+".csv");
     testDataList.clear();
+}
+
+void Sensor::filterUpdate()
+{
+    f.reset();
+    f.setup(sampling_frequency, (f1+f2)/2, f2-f1);
 }

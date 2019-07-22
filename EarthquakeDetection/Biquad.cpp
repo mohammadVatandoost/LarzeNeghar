@@ -1,204 +1,222 @@
-/*
- 
- This file is part of Butterworth Filter Design, a pair C++ classes and an
- accompanying suite of unit tests for designing high order Butterworth IIR &
- EQ filters using the bilinear transform.
- The generated filter coefficients are split out into cascaded biquad sections,
- for easy use in your garden variety biquad or second-order section (SOS).
- 
- Reference: http://en.wikipedia.org/wiki/Butterworth_filter
- http://www.musicdsp.org/files/Audio-EQ-Cookbook.txt
- 
- 
- Copyright (C) 2013,  iroro orife
- 
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
- 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- 
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
- 
- */
+/**
+ *
+ * "A Collection of Useful C++ Classes for Digital Signal Processing"
+ * By Vinnie Falco and Bernd Porr
+ *
+ * Official project location:
+ * https://github.com/berndporr/iir1
+ *
+ * See Documentation.cpp for contact information, notes, and bibliography.
+ *
+ * -----------------------------------------------------------------
+ *
+ * License: MIT License (http://www.opensource.org/licenses/mit-license.php)
+ * Copyright (c) 2009 by Vinnie Falco
+ * Copyright (c) 2011 by Bernd Porr
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ **/
 
-
-#include <math.h>
+#include "Common.h"
+#include "MathSupplement.h"
 #include "Biquad.h"
+#include <stdexcept>
 
+namespace Iir {
 
-#pragma mark Biquad
+	BiquadPoleState::BiquadPoleState (const Biquad& s)
+	{
+		const double a0 = s.getA0 ();
+		const double a1 = s.getA1 ();
+		const double a2 = s.getA2 ();
+		const double b0 = s.getB0 ();
+		const double b1 = s.getB1 ();
+		const double b2 = s.getB2 ();
 
-Biquad::Biquad(){
-}
-Biquad::~Biquad(){
-}
+		if (a2 == 0 && b2 == 0)
+		{
+			// single pole
+			poles.first = -a1;
+			zeros.first = -b0 / b1;
+			poles.second = 0;
+			zeros.second = 0;
+		}
+		else
+		{
+			{
+				const complex_t c = sqrt (complex_t (a1 * a1 - 4 * a0 * a2, 0));
+				double d = 2. * a0;
+				poles.first = -(a1 + c) / d;
+				poles.second =  (c - a1) / d;
+				if (poles.is_nan()) throw std::invalid_argument("poles are NaN");
+			}
 
+			{
+				const complex_t c = sqrt (complex_t (
+								  b1 * b1 - 4 * b0 * b2, 0));
+				double d = 2. * b0;
+				zeros.first = -(b1 + c) / d;
+				zeros.second =  (c - b1) / d;
+				if (zeros.is_nan()) throw std::invalid_argument("zeros are NaN");
+			}
+		}
 
-void Biquad::DF2TFourthOrderSection(double B0, double B1, double B2, double B3, double B4,
-                                    double A0, double A1, double A2, double A3, double A4){
-    b0 = B0  / A0;
-    b1 = B1  / A0;
-    b2 = B2  / A0;
-    b3 = B3  / A0;
-    b4 = B4  / A0;
-    
-    a1 = (-A1) / A0;  // The negation conforms the Direct-Form II Transposed discrete-time
-    a2 = (-A2) / A0;  // filter (DF2T) coefficients to the expectations of the process function.
-    a3 = (-A3) / A0;
-    a4 = (-A4) / A0;
-}
+		gain = b0 / a0;
+	}
 
+//------------------------------------------------------------------------------
 
-void Biquad::DF2TBiquad(double B0, double B1, double B2,
-                        double A0, double A1, double A2){
-    b0 = B0  / A0;
-    b1 = B1  / A0;
-    b2 = B2  / A0;
-    a1 = (-A1) / A0;  // The negation conforms the Direct-Form II Transposed discrete-time
-    a2 = (-A2) / A0;  // filter (DF2T) coefficients to the expectations of the process function.
-}
+/**
+ * Gets the frequency response of the Biquad
+ * \param normalizedFrequency Normalised frequency (0 to 0.5)
+ **/
+	complex_t Biquad::response (double normalizedFrequency) const
+	{
+		const double a0 = getA0 ();
+		const double a1 = getA1 ();
+		const double a2 = getA2 ();
+		const double b0 = getB0 ();
+		const double b1 = getB1 ();
+		const double b2 = getB2 ();
 
+		const double w = 2 * doublePi * normalizedFrequency;
+		const complex_t czn1 = std::polar (1., -w);
+		const complex_t czn2 = std::polar (1., -2 * w);
+		complex_t ch (1);
+		complex_t cbot (1);
 
+		complex_t ct (b0/a0);
+		complex_t cb (1);
+		ct = addmul (ct, b1/a0, czn1);
+		ct = addmul (ct, b2/a0, czn2);
+		cb = addmul (cb, a1/a0, czn1);
+		cb = addmul (cb, a2/a0, czn2);
+		ch   *= ct;
+		cbot *= cb;
 
-#pragma mark - BiquadChain
+		return ch / cbot;
+	}
 
-void BiquadChain::allocate(int count){
-    
-    numFilters = count;
-    _yn.resize(numFilters);
-    _yn1.resize(numFilters);
-    _yn2.resize(numFilters);
-    
-    // Fourth order sections
-    _yn3.resize(numFilters);
-    _yn4.resize(numFilters);
-}
+	std::vector<PoleZeroPair> Biquad::getPoleZeros () const
+	{
+		std::vector<PoleZeroPair> vpz;
+		BiquadPoleState bps (*this);
+		vpz.push_back (bps);
+		return vpz;
+	}
 
+	void Biquad::setCoefficients (double a0, double a1, double a2,
+					  double b0, double b1, double b2)
+	{
+		if (Iir::is_nan (a0)) throw std::invalid_argument("a0 is NaN");
+		if (Iir::is_nan (a1)) throw std::invalid_argument("a1 is NaN");
+		if (Iir::is_nan (a2)) throw std::invalid_argument("a2 is NaN");
+		if (Iir::is_nan (b0)) throw std::invalid_argument("b0 is NaN");
+		if (Iir::is_nan (b1)) throw std::invalid_argument("b1 is NaN");
+		if (Iir::is_nan (b2)) throw std::invalid_argument("b2 is NaN");
 
-BiquadChain::BiquadChain() : numFilters(0){
-}
+		m_a0 = a0;
+		m_a1 = a1/a0;
+		m_a2 = a2/a0;
+		m_b0 = b0/a0;
+		m_b1 = b1/a0;
+		m_b2 = b2/a0;
+	}
 
+	void Biquad::setOnePole (complex_t pole, complex_t zero)
+	{
+		if (pole.imag() != 0) throw std::invalid_argument("Imaginary part of pole is non-zero.");
+		if (zero.imag() != 0) throw std::invalid_argument("Imaginary part of zero is non-zero.");
 
-BiquadChain::BiquadChain(int count){
-    allocate(count);
-    reset();
-}
+		const double a0 = 1;
+		const double a1 = -pole.real();
+		const double a2 = 0;
+		const double b0 = -zero.real();
+		const double b1 = 1;
+		const double b2 = 0;
 
+		setCoefficients (a0, a1, a2, b0, b1, b2);
+	}
 
-void BiquadChain::resize(int count){
-    allocate(count);
-}
+	void Biquad::setTwoPole (complex_t pole1, complex_t zero1,
+				     complex_t pole2, complex_t zero2)
+	{
+		const double a0 = 1;
+		double a1;
+		double a2;
+		const char errMsgPole[] = "imaginary parts of both poles need to be 0 or complex conjugate";
+		const char errMsgZero[] = "imaginary parts of both zeros need to be 0 or complex conjugate";
 
+		if (pole1.imag() != 0)
+		{
+			if (pole2 != std::conj (pole1))
+				throw std::invalid_argument(errMsgPole);
+			a1 = -2 * pole1.real();
+			a2 = std::norm (pole1);
+		}
+		else
+		{
+			if (pole2.imag() != 0)
+				throw std::invalid_argument(errMsgPole);
+			a1 = -(pole1.real() + pole2.real());
+			a2 =   pole1.real() * pole2.real();
+		}
 
-void BiquadChain::reset(){
-    
-    _xn1 = 0;
-    _xn2 = 0;
-    
-    for(int i = 0; i < numFilters; i++){
-        _yn[i] = 0;
-        _yn1[i] = 0;
-        _yn2[i] = 0;
-        
-        // Fourth order sections
-        _yn3[i] = 0;
-        _yn4[i] = 0;
-    }
-}
+		const double b0 = 1;
+		double b1;
+		double b2;
 
+		if (zero1.imag() != 0)
+		{
+			if (zero2 != std::conj (zero1))
+				throw std::invalid_argument(errMsgZero);
+			b1 = -2 * zero1.real();
+			b2 = std::norm (zero1);
+		}
+		else
+		{
+			if (zero2.imag() != 0)
+				throw std::invalid_argument(errMsgZero);
 
-void BiquadChain::processBiquad(const float * input, float * output, const int stride, const int count, const Biquad * coeffs){
-    
-    double * yn = &_yn[0];
-    double * yn1 = &_yn1[0];
-    double * yn2 = &_yn2[0];
-    
-    for(int n = 0; n < count; n++){
-        double xn = *input;
-        
-        yn[0] = coeffs[0].b0 * xn + coeffs[0].b1 * _xn1 + coeffs[0].b2 * _xn2
-        + coeffs[0].a1 * yn1[0] + coeffs[0].a2 * yn2[0];
-        
-        for(int i = 1; i < numFilters; i++){
-            yn[i] = coeffs[i].b0 * yn[i - 1] + coeffs[i].b1 * yn1[i - 1] + coeffs[i].b2 * yn2[i - 1]
-            + coeffs[i].a1 * yn1[i] + coeffs[i].a2 * yn2[i];
-        }
-        
-        // Shift delay line elements.
-        for(int i = 0; i < numFilters; i++){
-            yn2[i] = yn1[i];
-            yn1[i] = yn[i];
-        }
-        _xn2 = _xn1;
-        _xn1 = xn;
-        
-        // Store result and stride
-        *output = yn[numFilters - 1];
-        
-        input += stride;
-        output += stride;
-    }
-}
+			b1 = -(zero1.real() + zero2.real());
+			b2 =   zero1.real() * zero2.real();
+		}
 
+		setCoefficients (a0, a1, a2, b0, b1, b2);
+	}
 
-void BiquadChain::processFourthOrderSections(const float * input, float * output, const int stride, const int count, const Biquad * coeffs){
-    
-    double * yn = &_yn[0];
-    double * yn1 = &_yn1[0];
-    double * yn2 = &_yn2[0];
-    double * yn3 = &_yn3[0];
-    double * yn4 = &_yn4[0];
-    
-    for(int n = 0; n < count; n++){
-        double xn = *input;
-        
-        yn[0] = coeffs[0].b0 * xn
-        + coeffs[0].b1 * _xn1
-        + coeffs[0].b2 * _xn2
-        + coeffs[0].b3 * xn3
-        + coeffs[0].b4 * xn4 +
-        
-        coeffs[0].a1 * yn1[0]
-        + coeffs[0].a2 * yn2[0]
-        + coeffs[0].a3 * yn3[0]
-        + coeffs[0].a4 * yn4[0];
-        
-        for(int i = 1; i < numFilters; i++){
-            yn[i] = coeffs[i].b0 * yn[i - 1]
-            + coeffs[i].b1 * yn1[i - 1]
-            + coeffs[i].b2 * yn2[i - 1]
-            + coeffs[i].b3 * yn3[i - 1]
-            + coeffs[i].b4 * yn4[i - 1] +
-            
-            coeffs[i].a1 * yn1[i]
-            + coeffs[i].a2 * yn2[i]
-            + coeffs[i].a3 * yn3[i]
-            + coeffs[i].a4 * yn4[i];
-        }
-        
-        // Shift delay line elements.
-        for(int i = 0; i < numFilters; i++){
-            yn4[i] = yn3[i];
-            yn3[i] = yn2[i];
-            yn2[i] = yn1[i];
-            yn1[i] = yn[i];
-        }
-        
-        xn4 = xn3;
-        xn3 = _xn2;
-        _xn2 = _xn1;
-        _xn1 = xn;
-        
-        // Store result and stride
-        *output = yn[numFilters - 1];
-        
-        input += stride;
-        output += stride;
-    }
+	void Biquad::setPoleZeroForm (const BiquadPoleState& bps)
+	{
+		setPoleZeroPair (bps);
+		applyScale (bps.gain);
+	}
+
+	void Biquad::setIdentity ()
+	{
+		setCoefficients (1, 0, 0, 1, 0, 0);
+	}
+
+	void Biquad::applyScale (double scale)
+	{
+		m_b0 *= scale;
+		m_b1 *= scale;
+		m_b2 *= scale;
+	}
+
 }

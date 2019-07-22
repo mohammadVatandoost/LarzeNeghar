@@ -2,12 +2,6 @@
 
 Algorithm::Algorithm()
 {
-     qDebug() << "Algorithm()****";
-    // 4th order butterworth
-    a = { 1, -5.568408742, 13.56000484, -19.04102622, 17.01482891, -9.949832147, 3.707336739, -0.800529257, 0.077625871};
-    b = { 0.018164321, 0, -0.072657282, 0, 0.108985924, 0, -0.072657282, 0, 0.018164321};
-    qDebug() << "w1 :" << w1 << " , " << w2;
-    butterWorthTest();
 
 
 }
@@ -56,8 +50,28 @@ void Algorithm::getButterWorthCoeffs()
     //    }
 }
 
+double Algorithm::trapz(QVector<double> temp)
+{
+    double sum = 0;
+    for(int i=0; i<temp.length(); i++) {
+        sum = sum + temp.at(i);
+    }
+    return sum;
+}
+
+double Algorithm::trapzWithPower2(QVector<double> temp)
+{
+    double sum = 0;
+    for(int i=0; i<temp.length(); i++) {
+        sum = sum + (temp.at(i)*temp.at(i));
+    }
+    return sum;
+}
+
 float Algorithm::runAlgorithm(QVector<double> data)
 {
+    int k1;
+    QVector<double> pstime;
     nt = data.length();
     QVector<float> sra;
     int temp = nt-ns;
@@ -73,8 +87,24 @@ float Algorithm::runAlgorithm(QVector<double> data)
     temp = sra.length();
     for(int i=0; i< temp; i++) {
         if(sra[i] > thresh) {
-            return i*dt;
+            pstime.append(i*dt);
         }
+    }
+    if(pstime.length() > 0) {
+//        qDebug() << "pstime.length() > 0";
+        k1 = pstime.first();
+//        qDebug() << "k1:"<< k1 << " ((3/dt)+k1) :" << ((3/dt)+k1);
+        QVector<double> acc_signal3 =  splitQvector(data, k1, ((3/dt)+k1) ) ;
+//        qDebug() << "acc_signal3.length():"<< acc_signal3.length() ;
+        QVector<double> vel_signal3, dis_signal3;
+        int pointsacc= acc_signal3.length();
+        for(int i=0;i<(pointsacc-1);i++) {
+         vel_signal3.append(dt*trapz( splitQvector(acc_signal3, i, i+1) ) );
+        }
+        for(int i=0;i<(pointsacc-2);i++) {
+         dis_signal3.append(dt*trapz( splitQvector(vel_signal3, i, i+1) ) );
+        }
+        double tavc=2*M_PI*sqrt(trapzWithPower2(vel_signal3)/trapzWithPower2(dis_signal3));
     }
     return 0;
 }
@@ -152,7 +182,16 @@ double Algorithm::meanQVector(QVector<double> temp)
 QVector<double> Algorithm::splitQvector(QVector<double> temp, int start, int stop)
 {
     QVector<double> tempBuffer;
+    if(start > temp.length() ) {
+        qDebug() << "splitQvector start > temp.length()";
+        return tempBuffer;
+    }
     int sizeVector = stop+1;
+    if(stop >= temp.length() ) {
+        qDebug() << "splitQvector stop >= temp.length()";
+        sizeVector = temp.length();
+    }
+
     for(int i =start; i<sizeVector;i++) {
         tempBuffer.append(temp[i]);
     }
