@@ -64,6 +64,7 @@
 #define antenSignal "antenSignal"
 #define sensors_Info "sensorsInfoArray"
 #define sensorsInfoType "sensorsInfoType"
+#define earthquakeType "earthquakeType"
 #define onRoof "onRoof"
 #define onGround "onGround"
 #define colibrateType "colibrateType"

@@ -77,10 +77,12 @@ console.log('Server listening on ' + HOST +':'+ PORT);
            var sendmessage= {};
            sendmessage["accTreshold"] = "5"; sendmessage["highPass"] = "0.1"; sendmessage["lowPass"] = "15" ;
            sendmessage["longPoint"] = "100"; sendmessage["shortPoint"] = "10"; sendmessage["staLtaTreshold"] = "5";
-           sendmessage["winLength"] = "3";
+           sendmessage["winLength"] = "3"; sendmessage["a1"] = "1"; sendmessage["a2"] = "1.02";
+            sendmessage["a3"] = "1";  sendmessage["a4"] = "1.02";
            eewConfigBuffer = JSON.stringify(sendmessage);
            db.insertConfig(sendmessage["accTreshold"], sendmessage["highPass"], sendmessage["lowPass"],
-            sendmessage["longPoint"], sendmessage["shortPoint"], sendmessage["staLtaTreshold"], sendmessage["winLength"]);
+            sendmessage["longPoint"], sendmessage["shortPoint"], sendmessage["staLtaTreshold"], 
+            sendmessage["winLength"], sendmessage["a1"], sendmessage["a2"], sendmessage["a3"], sendmessage["a4"]);
            if(win.webContents !== null) {
               win.webContents.send('set-EEWConfig', JSON.stringify(sendmessage));
           }
@@ -94,7 +96,9 @@ console.log('Server listening on ' + HOST +':'+ PORT);
       //     console.log(stdout);
       // });
       }).catch((err)=> {console.log(err);});
-      //   console.log('did-finish-load');
+      db.getEarthquakes().then((response) => {
+        console.log("getEarthquakes");console.log(response);
+      }).catch((err)=> {console.log(err);});
 
   });
   
@@ -145,7 +149,7 @@ ipc.on('eewConfig', function(event,arg) {
   temp[packetsCode.packetType] = packetsCode.eewConfigType ;
   console.log("eewConfig : " + arg);
   db.updateEEWConfig(temp["accTreshold"], temp["highPass"], temp["lowPass"], temp["longPoint"], 
-    temp["shortPoint"], temp["staLtaTreshold"], temp["winLength"]);
+    temp["shortPoint"], temp["staLtaTreshold"], temp["winLength"], temp["a1"], temp["a2"], temp["a3"], temp["a4"]);
     if(serverSocket !== null) {
         serverSocket.write(JSON.stringify(temp) + "***");
     }
@@ -336,6 +340,13 @@ function decodeSocketPacket(data) {
           // console.log("sensorsInfoType");
           if(win.webContents !== null) {
               win.webContents.send('update-battery-signal', packets[i]);
+          }
+      } else if(dataTemp.packetType === packetsCode.earthquakeType) {
+          console.log("earthquakeType");
+          db.insertEarthquake(dataTemp.date_time, dataTemp.estimated_magnitude, dataTemp.PGA_L1,
+            dataTemp.PGA_L2, dataTemp.PGA_V, dataTemp.PBA_L1, dataTemp.PBA_L2, dataTemp.PBA_V, "");
+          if(win.webContents !== null) {
+              win.webContents.send('earthquake', packets[i]);
           }
       }
      } 

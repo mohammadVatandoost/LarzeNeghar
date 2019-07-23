@@ -13,9 +13,9 @@ void AlgorithmThread::earthquakeHappen()
     }
 }
 
-void AlgorithmThread::setParameters(float highPass, float lowPass, int longPoint, int shortWin, int staLtaTreshold, int winLength)
+void AlgorithmThread::setParameters(float highPass, float lowPass, int longPoint, int shortWin, int staLtaTreshold, int winLength, double a1, double a2, double a3, double a4)
 {
-    algorithm.setParameters(highPass, lowPass, longPoint, shortWin, staLtaTreshold, winLength);
+    algorithm.setParameters(highPass, lowPass, longPoint, shortWin, staLtaTreshold, winLength, a1, a2, a3, a4);
 }
 
 void AlgorithmThread::setRunAlghoritm(bool temp)
@@ -34,21 +34,27 @@ void AlgorithmThread::run()
           if(!sensorsList->sensorItems[i].earthquackHappen) {
             if(sensorsList->sensorItems.at(i).onGroundSensor && (sensorsList->sensorItems.at(i).bordar == "z") ) {
              // filter data
-                float pstime = algorithm.runAlgorithm(sensorsList->sensorItems.at(i).alghorithmDataBuffer);
+                float earthquake_state = algorithm.runAlgorithm(sensorsList->sensorItems.at(i).alghorithmDataBuffer, &earthquakeMagnitude);
 
-                if(pstime != 0) {
-                    qDebug()<<"thread run ground sensor pstime:" <<pstime;
+                if(earthquake_state != no_earthquake) {
+//                    qDebug()<<"thread run ground sensor pstime:" <<pstime;
                   // calculate earthquak parameters
+                    if(earthquake_state == earthquake_Alarm) {
+                       signalAlarm();
+                    }
                     earthquakeHappen();
                     break;
                 }
             } else if(sensorsList->sensorItems.at(i).onRoofSensor && (sensorsList->sensorItems.at(i).bordar == "z") ) {
-                float pstime = algorithm.runAlgorithm(sensorsList->sensorItems.at(i).alghorithmDataBuffer);
+                float earthquake_state = algorithm.runAlgorithm(sensorsList->sensorItems.at(i).alghorithmDataBuffer);
 
-                if(pstime != 0) {
-                    qDebug()<<"thread run Roof sensor pstime:" <<pstime;
+                if(earthquake_state != no_earthquake) {
+//                    qDebug()<<"thread run Roof sensor pstime:" <<pstime;
+                    if(earthquake_state == earthquake_Alarm) {
+                        signalAlarm();
+                    }
                   // calculate earthquak parameters
-                    earthquakeHappen();
+//                    earthquakeHappen();
                 }
             }
           }

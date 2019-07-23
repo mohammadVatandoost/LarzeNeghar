@@ -12,7 +12,7 @@ var db = new sqlite3.Database('./dataBase.db', (err) => {
     // create Earthquake table
     db.run('CREATE TABLE IF NOT EXISTS Earthquakes (id INTEGER PRIMARY KEY AUTOINCREMENT, date_time TEXT, estimated_magnitude TEXT, PGA_L1 TEXT, PGA_L2 TEXT, PGA_V TEXT, PBA_L1 TEXT, PBA_L2 TEXT, PBA_V TEXT, discreption TEXT )');
     //create Table for EEW configuration
-    db.run('CREATE TABLE IF NOT EXISTS EEWConfig (id INTEGER PRIMARY KEY AUTOINCREMENT, accTreshold TEXT, highPass TEXT, lowPass TEXT, longPoint TEXT, shortPoint TEXT, staLtaTreshold TEXT, winLength TEXT )');
+    db.run('CREATE TABLE IF NOT EXISTS EEWConfig (id INTEGER PRIMARY KEY AUTOINCREMENT, accTreshold TEXT, highPass TEXT, lowPass TEXT, longPoint TEXT, shortPoint TEXT, staLtaTreshold TEXT, winLength TEXT, a1 TEXT, a2 TEXT, a3 TEXT, a4 TEXT )');
 
 });
 
@@ -34,10 +34,10 @@ module.exports.findEEWConfig = function () {
     });
 };
 // insert config just for one time
-module.exports.insertConfig = function (accTreshold, highPass, lowPass, longPoint, shortPoint, staLtaTreshold, winLength) {
+module.exports.insertConfig = function (accTreshold, highPass, lowPass, longPoint, shortPoint, staLtaTreshold, winLength, a1, a2, a3, a4) {
     console.log("insertNewSensor");
     // insert one row into the langs table
-    db.run(`INSERT INTO EEWConfig(accTreshold, highPass, lowPass, longPoint, shortPoint, staLtaTreshold, winLength) VALUES(`+accTreshold+`,`+highPass+`,`+lowPass+`,`+longPoint+`,`+shortPoint+`,`+staLtaTreshold+`,`+winLength+` )`, [], function(err) {
+    db.run(`INSERT INTO EEWConfig(accTreshold, highPass, lowPass, longPoint, shortPoint, staLtaTreshold, winLength, a1, a2, a3, a4) VALUES(`+accTreshold+`,`+highPass+`,`+lowPass+`,`+longPoint+`,`+shortPoint+`,`+staLtaTreshold+`,`+winLength+`,`+a1+`,`+a2+`,`+a3+`,`+a4+` )`, [], function(err) {
         if (err) {
             return console.log(err.message);
         }
@@ -46,9 +46,9 @@ module.exports.insertConfig = function (accTreshold, highPass, lowPass, longPoin
     });
 };
 
-module.exports.updateEEWConfig = function (accTreshold, highPass, lowPass, longPoint, shortPoint, staLtaTreshold, winLength) {
+module.exports.updateEEWConfig = function (accTreshold, highPass, lowPass, longPoint, shortPoint, staLtaTreshold, winLength, a1, a2, a3, a4) {
     console.log("findFirstConfig");
-    var sql = `UPDATE EEWConfig SET accTreshold = "`+accTreshold+`", highPass = "`+highPass+`", lowPass = "`+lowPass+`", longPoint = "`+longPoint+`", shortPoint = "`+shortPoint+`", staLtaTreshold = "`+staLtaTreshold+`", winLength = "`+winLength+`" WHERE id = 1` ;
+    var sql = `UPDATE EEWConfig SET accTreshold = "`+accTreshold+`", highPass = "`+highPass+`", lowPass = "`+lowPass+`", longPoint = "`+longPoint+`", shortPoint = "`+shortPoint+`", staLtaTreshold = "`+staLtaTreshold+`", winLength = "`+winLength+`", a1 = "`+a1+`", a2 ="`+a2+`", a3="`+a3+`", a4="`+a4+`" WHERE id = 1` ;
     console.log(sql);
     db.get(sql, [], (err, row) => {
         if (err) {
@@ -129,17 +129,15 @@ module.exports.insertEarthquake = function (date_time, estimated_magnitude, PGA_
 module.exports.getEarthquakes = function () {
     console.log("getEarthquakes");
     var sql = 'SELECT * FROM Earthquakes ';
-    db.get(sql, [], (err, row) => {
-        if (err) {
-            return console.log(err.message);
-        }
-        if (typeof row !== 'undefined') {
-          console.log(row);
-          return row;
-        } else {
-          console.log('Earthquakes does not exist');
-          return false;
-        }
+    return new Promise((resolve, reject) => {
+        db.get(sql, [], (err, row) => {
+          if (err) {
+             reject(err); // optional: you might choose to swallow errors.
+             // return console.log(err.message);
+          } else {
+            resolve(row);
+          }
+        });
     });
 };
 

@@ -6,11 +6,12 @@ Algorithm::Algorithm()
 
 }
 
-void Algorithm::setParameters(float highPass, float lowPass, int longPoint, int shortWin, int staLtaTreshold, int winLength)
+void Algorithm::setParameters(float highPass, float lowPass, int longPoint, int shortWin, int staLtaTreshold, int winLength, double eew_a1, double eew_a2, double eew_a3, double eew_a4)
 {
    f1 = highPass; f2 = lowPass; n1 = longPoint; ns = shortWin; thresh = staLtaTreshold; win_length = winLength;
    w1 = f1 / (fs/2);
    w2 = f2 / (fs/2);
+   a1 = eew_a1; a2 = eew_a2; a3 = eew_a3; a4 = eew_a4;
    // 4th order butterworth
 
    // filtering
@@ -53,60 +54,83 @@ void Algorithm::getButterWorthCoeffs()
 double Algorithm::trapz(QVector<double> temp)
 {
     double sum = 0;
-    for(int i=0; i<temp.length(); i++) {
-        sum = sum + temp.at(i);
-    }
-    return sum;
+        int SIZE = temp.length();
+        for(int i=0; i<SIZE; i++) {
+            if(i==0 || i== SIZE-1) {
+               sum = sum + (temp.at(i)/2);;
+            } else {
+               sum = sum + temp.at(i);
+            }
+        }
+        return sum;
 }
 
 double Algorithm::trapzWithPower2(QVector<double> temp)
 {
     double sum = 0;
-    for(int i=0; i<temp.length(); i++) {
-        sum = sum + (temp.at(i)*temp.at(i));
-    }
-    return sum;
+        int SIZE = temp.length();
+        for(int i=0; i<temp.length(); i++) {
+            if(i==0 || i== SIZE-1) {
+               sum = sum + ((temp.at(i)*temp.at(i))/2);;
+            } else {
+               sum = sum + (temp.at(i)*temp.at(i));
+            }
+        }
+        return sum;
 }
 
-float Algorithm::runAlgorithm(QVector<double> data)
+float Algorithm::runAlgorithm(QVector<double> data, double *erthMagnitude)
 {
     int k1;
+    *erthMagnitude = 0;
     QVector<double> pstime;
     nt = data.length();
-    QVector<float> sra;
+    QVector<double> sra;
     int temp = nt-ns;
+    QVector<double> aseries = absVector(data);
     for(int i=0; i< temp; i++) {
-        if(i>n1) {
-           double lta = meanQVector(splitQvector(data, i-n1, i) );
-           double sta = meanQVector(splitQvector(data, i, i+ ns) );
+        if((i+1)>n1) {
+           double lta = meanQVector(splitQvector(aseries, i-n1, i) );
+           double sta = meanQVector(splitQvector(aseries, i, i+ ns) );
            sra.append(sta/lta);
         } else {
            sra.append(0);
         }
     }
     temp = sra.length();
+    QVector<double> k;
     for(int i=0; i< temp; i++) {
         if(sra[i] > thresh) {
-            pstime.append(i*dt);
+            k.append((i+1));
+            pstime.append((i+1)*dt);
         }
     }
     if(pstime.length() > 0) {
 //        qDebug() << "pstime.length() > 0";
-        k1 = pstime.first();
+        k1 = k.first();
 //        qDebug() << "k1:"<< k1 << " ((3/dt)+k1) :" << ((3/dt)+k1);
-        QVector<double> acc_signal3 =  splitQvector(data, k1, ((3/dt)+k1) ) ;
+        QVector<double> acc_signal3 =  splitQvector(data, k1-1, ((3/dt)+k1)-1  ) ;
 //        qDebug() << "acc_signal3.length():"<< acc_signal3.length() ;
         QVector<double> vel_signal3, dis_signal3;
         int pointsacc= acc_signal3.length();
         for(int i=0;i<(pointsacc-1);i++) {
          vel_signal3.append(dt*trapz( splitQvector(acc_signal3, i, i+1) ) );
         }
+        double dmB = 0;
         for(int i=0;i<(pointsacc-2);i++) {
-         dis_signal3.append(dt*trapz( splitQvector(vel_signal3, i, i+1) ) );
+          double buffTemp = dt*trapz( splitQvector(vel_signal3, i, i+1) );
+          dis_signal3.append(buffTemp);
+          if(abs(buffTemp)> abs(dmB)) {dmB = buffTemp;}
         }
-        double tavc=2*M_PI*sqrt(trapzWithPower2(vel_signal3)/trapzWithPower2(dis_signal3));
+        double tavc = 2*M_PI*sqrt(trapzWithPower2(vel_signal3)/trapzWithPower2(dis_signal3));
+        *erthMagnitude = tavc;
+        if( ( a2< abs(dmB) ) && ( a1< abs(tavc) ) ) {
+           return earthquake_Alarm;
+        } else {
+            return earthquake_no_Alarm;
+        }
     }
-    return 0;
+    return no_earthquake;
 }
 
 QVector<double> Algorithm::bandPassFilter(QVector<double> data)
@@ -151,7 +175,7 @@ QVector<double> Algorithm::bandPassFilter(QVector<double> data)
 //     }
 }
 
-QVector<int> Algorithm::absVector(QVector<int> temp)
+QVector<double> Algorithm::absVector(QVector<double> temp)
 {
     int sizeVector = temp.size();
     for(int i=0;i<sizeVector; i++) {

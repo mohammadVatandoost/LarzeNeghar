@@ -44,6 +44,7 @@ void BackEnd::setSensorsList(SensorsList *sensorsList)
     // run thread
     algorithmThread = new AlgorithmThread(sensorsList);
     algorithmThread->start();
+    connect( algorithmThread, SIGNAL(signalAlarm()), SLOT(sendAlarmOn()) );
 }
 
 QVector<Sensor> BackEnd::getSensorsList()
@@ -251,8 +252,36 @@ void BackEnd::sendInitialize()
 
 void BackEnd::sendAlarmOn()
 {
-    qDebug() << "function start :" << "sendAlarmOn";
+    double erthMagnitude = algorithmThread->earthquakeMagnitude;
+    QJsonObject sendObject;
     updateTime();
+    sendObject.insert("date_time", QDateTime::currentDateTime().toString());
+    sendObject.insert("estimated_magnitude", erthMagnitude);
+    for(int i=0;i<mList->items().length();i++) {
+        if(mList->items().at(i).onGroundSensor && mList->items().at(i).bordar == "x") {
+           sendObject.insert("PGA_L1", mList->items().at(i).maxAccelarator);
+        }
+        if(mList->items().at(i).onGroundSensor && mList->items().at(i).bordar == "y") {
+           sendObject.insert("PGA_L2", mList->items().at(i).maxAccelarator);
+        }
+        if(mList->items().at(i).onGroundSensor && mList->items().at(i).bordar == "z") {
+           sendObject.insert("PGA_V", mList->items().at(i).maxAccelarator);
+        }
+        if(mList->items().at(i).onRoofSensor && mList->items().at(i).bordar == "x") {
+           sendObject.insert("PBA_L1", mList->items().at(i).maxAccelarator);
+        }
+        if(mList->items().at(i).onRoofSensor && mList->items().at(i).bordar == "y") {
+           sendObject.insert("PBA_L2", mList->items().at(i).maxAccelarator);
+        }
+        if(mList->items().at(i).onRoofSensor && mList->items().at(i).bordar == "z") {
+           sendObject.insert("PBA_V", mList->items().at(i).maxAccelarator);
+        }
+    }
+    sendObject.insert(packetType, earthquakeType);
+    QJsonDocument doc(sendObject);
+    pSocket->write(doc.toJson(QJsonDocument::Compact)+"***");
+
+    qDebug() << "function start :" << "sendAlarmOn :" <<doc.toJson(QJsonDocument::Compact);
     QJsonObject qJsonObject;
     qJsonObject.insert(Sensors_settings, "?");
     qJsonObject.insert(Time_Minute,minute);
@@ -1031,9 +1060,11 @@ void BackEnd::readTcpData()
               
         } else if(qJsonObject.value(packetType) == eewConfigType) {
               if(algorithmThread) {
-                  algorithmThread->setParameters(qJsonObject.value("highPass").toInt(), qJsonObject.value("lowPass").toInt(),
+                  algorithmThread->setParameters(qJsonObject.value("highPass").toDouble(), qJsonObject.value("lowPass").toDouble(),
                                                  qJsonObject.value("longPoint").toInt(), qJsonObject.value("shortPoint").toInt(),
-                                                 qJsonObject.value("staLtaTreshold").toInt(), qJsonObject.value("winLength").toInt());
+                                                 qJsonObject.value("staLtaTreshold").toInt(), qJsonObject.value("winLength").toInt(),
+                                                 qJsonObject.value("a1").toDouble(), qJsonObject.value("a2").toDouble(),
+                                                 qJsonObject.value("a3").toDouble(), qJsonObject.value("a4").toDouble());
                   mList->setFilterFrequency(qJsonObject.value("highPass").toInt(),
                                             qJsonObject.value("lowPass").toInt());
               }

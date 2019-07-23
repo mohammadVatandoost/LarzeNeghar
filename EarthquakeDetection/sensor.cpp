@@ -86,7 +86,8 @@ void Sensor::addData(int year, int month, int day, int hour, int minute, int sec
         qDebug()<< "sensor R"<<routerNumber<<" , S"<<sensorNumber<<" , "<<bordar <<" offset :" << offset;
         counter++;
     }
-    SensorData temp(minute, second, miliSecond, value);
+    double valueWithOutOffset = value - offset ;
+    SensorData temp(minute, second, miliSecond, valueWithOutOffset);
     if(year == 0) {yearBuff = year; monthBuff = month; dayBuff = day; hourBuff = hour; minuteBuff = minute;}
     if( (hourBuff != hour) && (savingOnLocal) && (isConnected) ) {
         qDebug()<< "storing to file add data hourBuff:"<< hourBuff << " , "<< hour ;
@@ -97,8 +98,7 @@ void Sensor::addData(int year, int month, int day, int hour, int minute, int sec
             listRow.append(QString::number( dataList[j].value ));
             dataStringList.append(listRow);
         }
-          appendDataToCSV(dataStringList, "./Data/R"+QString::number(routerNumber)+"S"+QString::number(sensorNumber)+bordar+"_"+QString::number(yearBuff)+"_"+QString::number(monthBuff)+"_"+QString::number(dayBuff)+"_"+QString::number(hourBuff)+".csv"); //"_"+QString::number(minuteBuff)+
-
+        appendDataToCSV(dataStringList, "./Data/R"+QString::number(routerNumber)+"S"+QString::number(sensorNumber)+bordar+"_"+QString::number(yearBuff)+"_"+QString::number(monthBuff)+"_"+QString::number(dayBuff)+"_"+QString::number(hourBuff)+".csv"); //"_"+QString::number(minuteBuff)+
         dataList.clear();
     }
     // for savingOnLocal
@@ -111,7 +111,8 @@ void Sensor::addData(int year, int month, int day, int hour, int minute, int sec
     }
     // for algorithm
     dataBuffer.append(temp);
-    alghorithmDataBuffer.append(abs(f.filter(value)));
+    alghorithmDataBuffer.append(f.filter(valueWithOutOffset));
+    if(abs(valueWithOutOffset) > abs(maxAccelarator)) {maxAccelarator = valueWithOutOffset;}
     if(earthquackHappen) {
 //        if( (dataBuffer.length() % 1000) == 0) {
 //           qDebug()<<routerNumber << ","<<sensorNumber<< " : " << dataBuffer.length();

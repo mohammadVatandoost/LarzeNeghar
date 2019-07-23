@@ -79,6 +79,7 @@ public:
     float f1 = 0.1;
     float f2 = 15;
     void filterUpdate();
+    double maxAccelarator = 0;
 };
 
 #endif // SENSOR_H

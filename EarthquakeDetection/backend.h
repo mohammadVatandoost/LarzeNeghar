@@ -50,8 +50,8 @@ public:
     void decodeJSON(QString message);
     void sendSerial(QString temp);
     void sendInitialize();
-    void sendAlarmOn();
-    void sendAlarmOff();
+//    void sendAlarmOn();
+//    void sendAlarmOff();
     void sendACK();
     void sendNACK();
     void updateTime();
@@ -96,6 +96,8 @@ public slots:
     void appendItem(); //Sensor sensorItem
     void timerSlot();
     void timerPacketTimeOut();
+    void sendAlarmOn();
+    void sendAlarmOff();
 private slots:
     void recieveSerialPort();
     void readTcpData();
