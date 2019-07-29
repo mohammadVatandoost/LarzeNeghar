@@ -80,13 +80,18 @@ void Sensor::addData(int year, int month, int day, int hour, int minute, int sec
     if(counter < average_number) {
         sum = sum + value ;
         counter++;
+//        qDebug() << "sensor R"<<routerNumber<<" , S"<<sensorNumber<<" , "<<bordar <<" counter :" << counter;
     }
     if(counter == average_number) {
         offset = sum / average_number ;
-        qDebug()<< "sensor R"<<routerNumber<<" , S"<<sensorNumber<<" , "<<bordar <<" offset :" << offset;
+//        offset =0;
+        qDebug()<< "sensor R"<<routerNumber<<" , S"<<sensorNumber<<" , "<<bordar <<" offset :" << offset<<" sum :" << sum;
         counter++;
     }
     double valueWithOutOffset = value - offset ;
+//    if(bordar == "z") {
+//       qDebug()<< "sensor R"<<routerNumber<<" , S"<<sensorNumber<<" , "<<bordar << " offset :" << offset <<" value:"<<value<<" valueWithOutOffset:"<<valueWithOutOffset;
+//    }
     SensorData temp(minute, second, miliSecond, valueWithOutOffset);
     if(year == 0) {yearBuff = year; monthBuff = month; dayBuff = day; hourBuff = hour; minuteBuff = minute;}
     if( (hourBuff != hour) && (savingOnLocal) && (isConnected) ) {
@@ -170,10 +175,10 @@ void Sensor::stopTest()
 {
     runTest = false;
     QVector<QStringList> dataStringList;
-    for(int j = 0; j<dataList.length(); j++) {
+    for(int j = 0; j<testDataList.length(); j++) {
         QStringList listRow;
-        listRow.append( QString::number(dataList[j].minute)+"_"+QString::number(dataList[j].second)+"_"+QString::number(dataList[j].miliSecond) );
-        listRow.append(QString::number( dataList[j].value ));
+        listRow.append( QString::number(testDataList[j].minute)+"_"+QString::number(testDataList[j].second)+"_"+QString::number(testDataList[j].miliSecond) );
+        listRow.append(QString::number( testDataList[j].value ));
         dataStringList.append(listRow);
     }
     appendDataToCSV(dataStringList, "./Data/Test_R"+QString::number(routerNumber)+"S"+QString::number(sensorNumber)+bordar+".csv");

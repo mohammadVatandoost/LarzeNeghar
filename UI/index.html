@@ -2,7 +2,7 @@
   <html>
     <head>
       <meta charset="UTF-8">
-      <title>Hello World!</title>
+      <title>Larze Neghar</title>
       <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
       <link rel="stylesheet" type="text/css" href="css/index.css">
       <link rel="stylesheet" type="text/css" href="css/main.css">
@@ -154,8 +154,8 @@
             <table class="table table-striped table-responsive">
                 <thead>
                 <tr>
-                    <th></th>
-                    <th></th>
+                   <!--  <th></th>
+                    <th></th> -->
                     <th>Date-time</th>
                     <th>Estimated Magnitude</th>
                     <th>PGA-L1</th>
@@ -164,7 +164,7 @@
                     <th>PBA-L1</th>
                     <th>PBA-L2</th>
                     <th>PBA-V</th>
-                    <th>توضیحات</th>
+                    <th>Description</th>
                 </tr>
                 </thead>
                 <tbody id="tableEarthquake">
@@ -216,6 +216,12 @@
              <label for="FFT">Window length for FFT</label>
              <input type="number" class="form-control" id="FFT" value="5">
           </div>
+          <br/><br/><br/>
+          <div class="form-group">
+            <label for="frequencyRange" id="frequencyRangeValue">200 Hz</label>
+            <input type="range" class="form-control-range" min="10" max="200" value="200" id="frequencyRange" />
+          </div>
+          <br/>
           <button class="btn btn-info" id="applyChartSelect">Apply</button>
         </div>
       </div>

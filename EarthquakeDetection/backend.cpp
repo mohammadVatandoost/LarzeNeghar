@@ -25,7 +25,16 @@ BackEnd::BackEnd(QObject *parent) : QObject(parent)
 //    qDebug()<< "list size :" << list.size();
 //    for(int i=0; i<list.size(); i++) {
 //      qDebug()<< i << ":" << list[i].fileName();
-//    }
+    //    }
+}
+
+BackEnd::~BackEnd()
+{
+    if(pSocket) {delete pSocket;}
+    if(timer) {delete timer;}
+    if(packetTimer) {delete packetTimer;}
+    if(algorithmThread) {delete algorithmThread;}
+    if(serial) {delete serial;}
 }
 
 void BackEnd::setSensorsList(SensorsList *sensorsList)
@@ -45,6 +54,7 @@ void BackEnd::setSensorsList(SensorsList *sensorsList)
     algorithmThread = new AlgorithmThread(sensorsList);
     algorithmThread->start();
     connect( algorithmThread, SIGNAL(signalAlarm()), SLOT(sendAlarmOn()) );
+    connect( algorithmThread, SIGNAL(storeEarthquakeData()), SLOT(storeEarthquakeData()) );
 }
 
 QVector<Sensor> BackEnd::getSensorsList()
@@ -252,10 +262,47 @@ void BackEnd::sendInitialize()
 
 void BackEnd::sendAlarmOn()
 {
+
+    updateTime();
+    qDebug() << "function start :" << "sendAlarmOn :";
+    QJsonObject qJsonObject;
+    qJsonObject.insert(Sensors_settings, "?");
+    qJsonObject.insert(Time_Minute,minute);
+    qJsonObject.insert(Time_Second,second);
+    qJsonObject.insert(Time_Mili_Second,miliSecond);
+    qJsonObject.insert("ALM", 1);
+    qDebug() << "sendInitialize : " << jsonToString(qJsonObject);
+    sendSerial(jsonToString(qJsonObject)) ;
+}
+
+void BackEnd::sendAlarmOff()
+{
+    qDebug() << "function start :" << "sendAlarmOff";
+    updateTime();
+    QJsonObject qJsonObject;
+    qJsonObject.insert(Sensors_settings, "?");
+    qJsonObject.insert(Time_Minute,minute);
+    qJsonObject.insert(Time_Second,second);
+    qJsonObject.insert(Time_Mili_Second,miliSecond);
+    qJsonObject.insert("ALM", 0);
+    qDebug() << "sendInitialize : " << jsonToString(qJsonObject);
+    sendSerial(jsonToString(qJsonObject)) ;
+}
+
+void BackEnd::storeEarthquakeData()
+{
     double erthMagnitude = algorithmThread->earthquakeMagnitude;
     QJsonObject sendObject;
-    updateTime();
-    sendObject.insert("date_time", QDateTime::currentDateTime().toString());
+//    sendObject.insert("date_time", QString::number(QDate::currentDate().year())+"/"+
+//                      QString::number(QDate::currentDate().month())+"/"+QString::number(QDate::currentDate().day())+
+//                      ","+QString::number(QTime::currentTime().hour())+":"+QString::number(QTime::currentTime().minute())+
+//                      ":"+QString::number(QTime::currentTime().second()));
+    sendObject.insert("year", QString::number(QDate::currentDate().year()));
+    sendObject.insert("month", QString::number(QDate::currentDate().month()));
+    sendObject.insert("day", QString::number(QDate::currentDate().day()));
+    sendObject.insert("hour", QString::number(QTime::currentTime().hour()));
+    sendObject.insert("minute", QString::number(QTime::currentTime().minute()));
+    sendObject.insert("second", QString::number(QTime::currentTime().second()));
     sendObject.insert("estimated_magnitude", erthMagnitude);
     for(int i=0;i<mList->items().length();i++) {
         if(mList->items().at(i).onGroundSensor && mList->items().at(i).bordar == "x") {
@@ -280,30 +327,7 @@ void BackEnd::sendAlarmOn()
     sendObject.insert(packetType, earthquakeType);
     QJsonDocument doc(sendObject);
     pSocket->write(doc.toJson(QJsonDocument::Compact)+"***");
-
-    qDebug() << "function start :" << "sendAlarmOn :" <<doc.toJson(QJsonDocument::Compact);
-    QJsonObject qJsonObject;
-    qJsonObject.insert(Sensors_settings, "?");
-    qJsonObject.insert(Time_Minute,minute);
-    qJsonObject.insert(Time_Second,second);
-    qJsonObject.insert(Time_Mili_Second,miliSecond);
-    qJsonObject.insert("ALM", 1);
-    qDebug() << "sendInitialize : " << jsonToString(qJsonObject);
-    sendSerial(jsonToString(qJsonObject)) ;
-}
-
-void BackEnd::sendAlarmOff()
-{
-    qDebug() << "function start :" << "sendAlarmOff";
-    updateTime();
-    QJsonObject qJsonObject;
-    qJsonObject.insert(Sensors_settings, "?");
-    qJsonObject.insert(Time_Minute,minute);
-    qJsonObject.insert(Time_Second,second);
-    qJsonObject.insert(Time_Mili_Second,miliSecond);
-    qJsonObject.insert("ALM", 0);
-    qDebug() << "sendInitialize : " << jsonToString(qJsonObject);
-    sendSerial(jsonToString(qJsonObject)) ;
+    qDebug() << "sendEqrthquake data:"<<doc.toJson(QJsonDocument::Compact);
 }
 
 void BackEnd::sendACK()
@@ -646,7 +670,7 @@ void BackEnd::newDecode()
      sensorsInfoPacket.insert(packetType, sensorsInfoType);
      QJsonArray sensorsInfoArray;
      for(int i=0; i < dataByte.length() ; i++) {
-        UID=dataByte[i]; i++;
+        UID=((uint8_t)dataByte[i]); i++;
         sensorBatteryLevel = QString::number((int)dataByte[i]);
         if((int)dataByte[i] == -1) {sensorBatteryLevel = "-";}
         i++;
@@ -675,22 +699,24 @@ void BackEnd::newDecode()
             int j = i+60;
             while(i<j) {
                 int xData = (((signed char)dataByte[i] & 0xff) | ((signed char)dataByte[i + 1] << 8))*3.9;
-                xData = xData - xOffset;
+//                xData = xData - xOffset;
                 i++;i++;
-                xBordar.append(xData);
+                xBordar.append(xData - xOffset);
                 mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "x", xData, dataNumber);
 
                 int yData = (((signed char)dataByte[i] & 0xff) | ((signed char)dataByte[i + 1] << 8))*3.9;
-                yData = yData - yOffset;
+//                yData = yData - yOffset;
                 i++;i++;
 //                 qDebug() << "YData : " << yData ;
-                yBordar.append(yData);
+                yBordar.append(yData - yOffset);
                 mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "y", yData, dataNumber);
 
                 int zData = (((signed char)dataByte[i] & 0xff) | ((signed char)dataByte[i + 1] << 8))*3.9;
-                zData = zData - zOffset;
+                qDebug() << "zData : " << zData << " zOffset "<<zOffset <<  " zData - zOffset:"<<zData - zOffset;
+//                zData = zData - zOffset;
+
                 i++;i++;
-                zBordar.append(zData);
+                zBordar.append(zData - zOffset);
                 mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "z", zData, dataNumber);
 
                 dataNumber++;
@@ -712,7 +738,7 @@ void BackEnd::newDecode()
                 i++;i++;i++;
                 xBordar.append(xData);
                 mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "x", xData, dataNumber);
-
+//                qDebug() << "xData :" << xData;
                 int yData;
                 if( (dataByte[i+2] & 0xf0) == 0xf0) {
                     yData = (((signed char)dataByte[i] & 0xff) | (((signed char)dataByte[i + 1] & 0xff) << 8) | (((signed char)dataByte[i+2] & 0xff) << 16)  | ((0xff) << 24) );
@@ -978,7 +1004,10 @@ void BackEnd::recieveSerialPort()
             } else if(flagStart == 1) {
                 if(data[i] == START_BYTE1) {
                     flagStart++;byteCounter = 0 ;//qDebug() << "START_BYTE1 ";
-                } else {flagStart--;recivedSerialPort.append(*bufByte);recivedSerialPort.append(*temp);qDebug() << "Not START_BYTE1 ";}
+                } else {
+                    flagStart--;recivedSerialPort.append(*bufByte);recivedSerialPort.append(*temp);qDebug() << "Not START_BYTE1 ";
+                    if(bufByte == nullptr) {delete bufByte;}
+                }
             } else if(flagStart == 2) {
                 if(byteCounter< (packetLengh-4)) {
                     dataByte[byteCounter] = data[i];
@@ -1006,8 +1035,10 @@ void BackEnd::recieveSerialPort()
                 recivedSerialPort.append(*temp);
             }
         }
+        if(temp) {delete temp;}
+//        if(bufByte) {delete bufByte;}
     }
-
+    if(bufByte == nullptr) {delete bufByte;}
 }
 
 void BackEnd::readTcpData()

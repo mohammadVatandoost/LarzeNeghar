@@ -13,7 +13,7 @@ SensorsList::SensorsList(QObject *parent) : QObject(parent)
     connect(timer, SIGNAL(timeout()), this, SLOT(timerSlot()));
     timer->start(30000);
 
-    QTimer *timerChangeCSV=new QTimer(this);
+//    QTimer *timerChangeCSV=new QTimer(this);
 //    connect(timerChangeCSV,SIGNAL(timeout()),this,SLOT(changeCSVFilesName()));
 //    timerChangeCSV->start(EachFilePeriodinMS);
 
@@ -21,6 +21,11 @@ SensorsList::SensorsList(QObject *parent) : QObject(parent)
     if(jsonFileAPI.loadFile()) {
         qJsonArray = jsonFileAPI.getSensorsData();
     }
+}
+
+SensorsList::~SensorsList()
+{
+    if(timer) {delete timer;}
 }
 
 bool SensorsList::setSensorItem(int index, Sensor &sensor)
@@ -77,7 +82,7 @@ void SensorsList::updateSensorInfo(QJsonObject temp)
 }
 
 void SensorsList::addData(int min, int sec, int milSec, int routerNumber, int sensorNumber, QString sensorBordar,
-                          float dataValue, uint8_t dataNumber)
+                          double dataValue, uint8_t dataNumber)
 {
 //    qDebug()<<"sensorList  addData "<<sensorBordar;
     bool isNewSensor = true; // for checking new sensor

@@ -10,7 +10,7 @@ var db = new sqlite3.Database('./dataBase.db', (err) => {
     // create sensors data
     // db.run('CREATE TABLE IF NOT EXISTS SensorsData (id INTEGER PRIMARY KEY AUTOINCREMENT, router_number INTEGER NOT NULL, sensor_number INTEGER NOT NULL, discreption TEXT, saving_local INTEGER DEFAULT 0, saving_web INTEGER DEFAULT 0 )');
     // create Earthquake table
-    db.run('CREATE TABLE IF NOT EXISTS Earthquakes (id INTEGER PRIMARY KEY AUTOINCREMENT, date_time TEXT, estimated_magnitude TEXT, PGA_L1 TEXT, PGA_L2 TEXT, PGA_V TEXT, PBA_L1 TEXT, PBA_L2 TEXT, PBA_V TEXT, discreption TEXT )');
+    db.run('CREATE TABLE IF NOT EXISTS Earthquakes (id INTEGER PRIMARY KEY AUTOINCREMENT, year TEXT, month TEXT, day TEXT, hour TEXT, minute TEXT, second TEXT, estimated_magnitude TEXT, PGA_L1 TEXT, PGA_L2 TEXT, PGA_V TEXT, PBA_L1 TEXT, PBA_L2 TEXT, PBA_V TEXT, discreption TEXT )');
     //create Table for EEW configuration
     db.run('CREATE TABLE IF NOT EXISTS EEWConfig (id INTEGER PRIMARY KEY AUTOINCREMENT, accTreshold TEXT, highPass TEXT, lowPass TEXT, longPoint TEXT, shortPoint TEXT, staLtaTreshold TEXT, winLength TEXT, a1 TEXT, a2 TEXT, a3 TEXT, a4 TEXT )');
 
@@ -114,10 +114,11 @@ module.exports.updateSensorInfo = function (routerNumber, sensorNumber, discrept
     });
 };
 
-module.exports.insertEarthquake = function (date_time, estimated_magnitude, PGA_L1, PGA_L2, PGA_V, PBA_L1, PBA_L2, PBA_V, discreption) {
+module.exports.insertEarthquake = function (year, month, day, hour, minute, second, estimated_magnitude, PGA_L1, PGA_L2, PGA_V, PBA_L1, PBA_L2, PBA_V) {
     console.log("insertEarthquake");
+    console.log(`INSERT INTO Earthquakes(year, month, day, hour, minute, second, estimated_magnitude, PGA_L1, PGA_L2, PGA_V, PBA_L1, PBA_L2, PBA_V) VALUES(`+year+`,`+month+`,`+day+`,`+hour+`,`+minute+`,`+second+`,`+estimated_magnitude+`,`+PGA_L1+`,`+PGA_L2+`,`+PGA_V+`,`+PBA_L1+`,`+PBA_L2+`,`+PBA_V+`)`);
     // insert one row into the langs table
-    db.run(`INSERT INTO Earthquakes(date_time, estimated_magnitude, PGA_L1, PGA_L2, PGA_V, PBA_L1, PBA_L2, PBA_V, discreption) VALUES(`+date_time+`,`+estimated_magnitude+`,`+PGA_L1+`,`+PGA_L2+`,`+PGA_V+`,`+PBA_L1+`,`+PBA_L2+`,`+PBA_V+`,`+discreption+`)`, [], function(err) {
+    db.run(`INSERT INTO Earthquakes(year, month, day, hour, minute, second, estimated_magnitude, PGA_L1, PGA_L2, PGA_V, PBA_L1, PBA_L2, PBA_V) VALUES(`+year+`,`+month+`,`+day+`,`+hour+`,`+minute+`,`+second+`,`+estimated_magnitude+`,`+PGA_L1+`,`+PGA_L2+`,`+PGA_V+`,`+PBA_L1+`,`+PBA_L2+`,`+PBA_V+`)`, [], function(err) {
         if (err) {
             return console.log(err.message);
         }

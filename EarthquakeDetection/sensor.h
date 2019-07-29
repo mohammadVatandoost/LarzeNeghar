@@ -38,7 +38,7 @@ public:
     QString routerBatteryLevel;
     int sampleRate = 200;
     int counter = 0 ;
-    int sum = 0;
+    double sum = 0;
     QString low_pass = "15";
     QString high_pass = "0.1";
     QString Defaultbordar;
@@ -73,7 +73,7 @@ public:
     void stopTest();
     int min = 0;
     int max = 0;
-    int offset = 0;
+    double offset = 0;
     // bandpass filter 
     Iir::Butterworth::BandPass<filter_order> f;
     float f1 = 0.1;

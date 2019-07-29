@@ -11,6 +11,7 @@ void AlgorithmThread::earthquakeHappen()
     for(int i=0; i<sensorsList->sensorItems.size(); i++) {
         sensorsList->sensorItems[i].earthquackHappen = true ;
     }
+    earthquakeHappenFlag = true;
 }
 
 void AlgorithmThread::setParameters(float highPass, float lowPass, int longPoint, int shortWin, int staLtaTreshold, int winLength, double a1, double a2, double a3, double a4)
@@ -32,26 +33,30 @@ void AlgorithmThread::run()
 //          qDebug()<< "thread run runAlghorithm";
         for(int i=0; i<sensorsList->sensorItems.size(); i++) {
           if(!sensorsList->sensorItems[i].earthquackHappen) {
-            if(sensorsList->sensorItems.at(i).onGroundSensor && (sensorsList->sensorItems.at(i).bordar == "z") ) {
+              if(earthquakeHappenFlag) {
+                  emit storeEarthquakeData();
+                  earthquakeHappenFlag = false;
+              }
+            if(sensorsList->sensorItems.at(i).onGroundSensor && (sensorsList->sensorItems.at(i).bordar == "z") && (sensorsList->sensorItems.at(i).alghorithmDataBuffer.length()>100) ) {
              // filter data
                 float earthquake_state = algorithm.runAlgorithm(sensorsList->sensorItems.at(i).alghorithmDataBuffer, &earthquakeMagnitude);
 
                 if(earthquake_state != no_earthquake) {
-//                    qDebug()<<"thread run ground sensor pstime:" <<pstime;
+                    qDebug()<<"earthquakeMagnitude:" <<earthquakeMagnitude <<" ,earthquake_state:"<< earthquake_state ;
                   // calculate earthquak parameters
                     if(earthquake_state == earthquake_Alarm) {
-                       signalAlarm();
+                       emit signalAlarm();
                     }
                     earthquakeHappen();
                     break;
                 }
-            } else if(sensorsList->sensorItems.at(i).onRoofSensor && (sensorsList->sensorItems.at(i).bordar == "z") ) {
-                float earthquake_state = algorithm.runAlgorithm(sensorsList->sensorItems.at(i).alghorithmDataBuffer);
+            } else if(sensorsList->sensorItems.at(i).onRoofSensor && (sensorsList->sensorItems.at(i).bordar == "z") && (sensorsList->sensorItems.at(i).alghorithmDataBuffer.length()>100) ) {
+                float earthquake_state = algorithm.runAlgorithm(sensorsList->sensorItems.at(i).alghorithmDataBuffer, &earthquakeMagnitude);
 
                 if(earthquake_state != no_earthquake) {
-//                    qDebug()<<"thread run Roof sensor pstime:" <<pstime;
+                     qDebug()<<"earthquakeMagnitude:" <<earthquakeMagnitude <<" ,earthquake_state:"<< earthquake_state ;
                     if(earthquake_state == earthquake_Alarm) {
-                        signalAlarm();
+                        emit signalAlarm();
                     }
                   // calculate earthquak parameters
 //                    earthquakeHappen();

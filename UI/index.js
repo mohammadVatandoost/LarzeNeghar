@@ -8,7 +8,7 @@ const { exec } = require('child_process');
 var sensors = [];
 var activateAlgorithm = true;
 var eewConfigBuffer;
-// runDBTest(db);
+runDBTest(db);
 
 
 // const NativeImage = require('native-image');
@@ -63,7 +63,7 @@ console.log('Server listening on ' + HOST +':'+ PORT);
     win.loadFile('index.html')
   
     // Open the DevTools.
-    win.webContents.openDevTools()
+    //win.webContents.openDevTools()
 
     win.webContents.on('did-finish-load', () => {
       db.findEEWConfig().then((response) => {
@@ -87,13 +87,13 @@ console.log('Server listening on ' + HOST +':'+ PORT);
               win.webContents.send('set-EEWConfig', JSON.stringify(sendmessage));
           }
          }
-         // exec('start ./EarthquakeDetection/EarthquakeDetection.exe', (err, stdout, stderr) => {
-      //     console.log("run exe");
-      //     if (err) {
-      //         console.error(err);
-      //         return;
-      //     }
-      //     console.log(stdout);
+         // exec('./EarthquakeDetection', (err, stdout, stderr) => {
+          // console.log("run exe");
+          // if (err) {
+            //   console.error(err);
+              // return;
+          // }
+           //console.log(stdout);
       // });
       }).catch((err)=> {console.log(err);});
       db.getEarthquakes().then((response) => {
@@ -168,7 +168,7 @@ ipc.on('chartsApply', function(event,arg) {
       //console.log(charts[i]);console.log(charts[i]["B"]);console.log(charts[i].B);
        db.findSensorWithDes(charts[i].description, charts[i].B).then((response) => {
         console.log(response);
-         chartsTemp.push({"R": response.sensorData.router_number, "S": response.sensorData.sensor_number, "B": response.Bordar});
+         chartsTemp.push({"R": response.sensorData.router_number+'', "S": response.sensorData.sensor_number+'', "B": response.Bordar+''});
          if(charts.length === chartsTemp.length) {
            sendmessage["charts"] = chartsTemp;
            console.log(JSON.stringify(sendmessage) + "***");
@@ -252,7 +252,7 @@ ipc.on('saveSensorInfo', function(event,arg) {
          sensorsInfo[i].onRoof, sensorsInfo[i].onGround);  
     }
     activateAlgorithm = temp["activateAlgorithm"]
-  temp[packetsCode.packetType] = packetsCode.sensorsInfo;
+    temp[packetsCode.packetType] = packetsCode.sensorsInfo;
     if(serverSocket !== null) {
         serverSocket.write(JSON.stringify(temp) + "***");
     }
@@ -342,11 +342,13 @@ function decodeSocketPacket(data) {
               win.webContents.send('update-battery-signal', packets[i]);
           }
       } else if(dataTemp.packetType === packetsCode.earthquakeType) {
-          console.log("earthquakeType");
-          db.insertEarthquake(dataTemp.date_time, dataTemp.estimated_magnitude, dataTemp.PGA_L1,
-            dataTemp.PGA_L2, dataTemp.PGA_V, dataTemp.PBA_L1, dataTemp.PBA_L2, dataTemp.PBA_V, "");
+          console.log("earthquakeType");console.log(dataTemp);
+          db.insertEarthquake(dataTemp.year, dataTemp.month, dataTemp.day, dataTemp.hour, dataTemp.minute,
+          dataTemp.second, dataTemp.estimated_magnitude+'', dataTemp.PGA_L1+'',
+            dataTemp.PGA_L2+'', dataTemp.PGA_V+'', dataTemp.PBA_L1+'', dataTemp.PBA_L2+'', dataTemp.PBA_V+'');
+          dataTemp["discreption"] = "";
           if(win.webContents !== null) {
-              win.webContents.send('earthquake', packets[i]);
+              win.webContents.send('earthquake', JSON.stringify(dataTemp));
           }
       }
      } 
@@ -372,7 +374,9 @@ function runDBTest(dataBase) {
     // dataBase.insertNewSensor(2,2);
     // dataBase.insertNewSensor(2,3);
     // dataBase.checkNewSensor(1,1);
-    // dataBase.checkNewSensor(1,10);
+   // console.log("**********runTest*************"); 
+   // db.insertEarthquake("11", '123', '123',
+   //          '123', '123', '123', '123', '123', "456");
 }
 
 function hasProperty(object, key) {

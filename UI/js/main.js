@@ -98,9 +98,10 @@ ipc.on('earthquake',function(event,arg) {
     var earthquakeData = JSON.parse(arg);
     var temp = `
         <tr>
-         <td class="text-center">`+earthquakeData.date_time+`</td><td class="text-center">`+earthquakeData.estimated_magnitude+`</td><td class="text-center">`+arg.PGA_L1+`</td>
+         <td class="text-center">`+earthquakeData.year+'/'+earthquakeData.month+'/'+earthquakeData.day+', '+earthquakeData.hour+':'+earthquakeData.minute+':'+earthquakeData.second+
+         `</td><td class="text-center">`+earthquakeData.estimated_magnitude+`</td><td class="text-center">`+earthquakeData.PGA_L1+`</td>
          <td class="text-center">`+earthquakeData.PGA_L2+`</td><td class="text-center">`+earthquakeData.PGA_V+`</td><td class="text-center">`+earthquakeData.PBA_L1+`</td>
-        <td class="text-center">`+earthquakeData.PBA_L2+`</td><td class="text-center">`+earthquakeData.PBA_V+`</td></tr>`;
+        <td class="text-center">`+earthquakeData.PBA_L2+`</td><td class="text-center">`+earthquakeData.PBA_V+`</td><td class="text-center">`+earthquakeData.discreption+`</td></tr>`;
     $("#tableEarthquake").append(temp);
 });
 

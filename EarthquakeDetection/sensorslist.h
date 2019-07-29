@@ -24,6 +24,7 @@ class SensorsList : public QObject
     Q_OBJECT
 public:
     explicit SensorsList(QObject *parent = nullptr);
+    ~SensorsList();
     bool setSensorItem(int index,Sensor &sensor);
     QVector<Sensor> items();
     QVector<Sensor> sensorItems;
@@ -34,7 +35,7 @@ public:
     void addSensor(Sensor newSensor);
     void updateSensorInfo(QJsonObject temp);
     void addData(int min, int sec, int milSec, int routerNumber, int sensorNumber,
-                 QString sensorBordar, float dataValue, uint8_t dataNumber);
+                 QString sensorBordar, double dataValue, uint8_t dataNumber);
     void setSensorsSettings(int sensorNumber, QString sensorBordar, QString batteryLevel,int routerBatteryLevel);
     void setRoutersSettings(int routerNumber, QString batteryLevel);
     void setSensorFrequency(int sensorNumber, int sampleRate, QString bandpassFilter);

@@ -28,6 +28,7 @@ class BackEnd : public QObject
     Q_OBJECT
 public:
     explicit BackEnd(QObject *parent = nullptr);
+    ~BackEnd();
     Q_INVOKABLE void setSensorsList(SensorsList *sensorsList);
     Q_INVOKABLE QVector<Sensor> getSensorsList();
     Q_INVOKABLE QList<int> getSenorsX(QString routerNumber, QString sensorNumber, QString bordar);
@@ -98,6 +99,7 @@ public slots:
     void timerPacketTimeOut();
     void sendAlarmOn();
     void sendAlarmOff();
+    void storeEarthquakeData();
 private slots:
     void recieveSerialPort();
     void readTcpData();

@@ -1,5 +1,7 @@
 #ifndef ALGORITHMTHREAD_H
 #define ALGORITHMTHREAD_H
+#include <QObject>
+#include <QtCore/QObject>
 #include <algorithm.h>
 #include <QThread>
 #include "sensorslist.h"
@@ -10,6 +12,7 @@
 
 class AlgorithmThread : public QThread
 {
+    Q_OBJECT
 public:
     AlgorithmThread(SensorsList *sList);
     SensorsList *sensorsList;
@@ -19,8 +22,10 @@ public:
     bool runAlghorithm = true;
     void setRunAlghoritm(bool temp);
     double earthquakeMagnitude = 0;
+    bool earthquakeHappenFlag = false;
 signals:
  void signalAlarm();
+ void storeEarthquakeData();
 protected:
    virtual void run();
 

@@ -29,7 +29,7 @@ public:
     // filtering
     QVector<int> tseries_f;
     // sta/lta
-    int n1 = 100;
+    int nl = 100;
     int ns = 10;
     float dt = 0.005;
     int thresh = 5;

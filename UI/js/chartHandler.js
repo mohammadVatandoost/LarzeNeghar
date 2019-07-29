@@ -29,14 +29,27 @@ var dataChart3 = [];
 var seconds = 0;
 var miliSeconds = 0 ;
 // for fft
-var maxFrequency = 200
+var maxFrequency = 200;
 var fftChart1 = [];
 var fftChart2 = [];
 var fftChart3 = [];
 var frequency = [];
+var frequencyRangeValue = document.getElementById("frequencyRangeValue");
+var slider = document.getElementById("frequencyRange");
 for(var i=0; i<maxFrequency; i++) {
   frequency.push(i);
 }
+slider.oninput = function() {
+            frequencyRangeValue.innerHTML = this.value+' Hz';
+            maxFrequency = this.value;
+            while(frequency.length > 0) {frequency.shift();}
+            for(var i=0; i<maxFrequency; i++) {
+                 frequency.push(i);
+             }
+}
+
+
+
           // for(var i=0; i < numberOfDataShowing ; i++) {
           //   // if(i%20 === 0) {
           //     times.push("12:"+counter);
@@ -83,6 +96,11 @@ var config = {
                               display: true,
                               labelString: 'value'
                           }
+                      }],
+                      xAxes: [{
+                        ticks: {
+                         fontSize: 18
+                        }
                       }]
                   },
                   animation: {
@@ -192,7 +210,7 @@ ipc.on('sensor-data',function(event,arg) {
     var fftChartTemp = arg['chart1FFT'];
     var dataNumber2 = fftChartTemp.length;
     while(fftChart1.length > 0) {fftChart1.shift();}
-    for(var i=0; i<dataNumber2; i++) {fftChart1.push(fftChartTemp[i]);}
+    for(var i=0; i<maxFrequency; i++) {fftChart1.push(fftChartTemp[i]);}
   }
   // chart 2
   if(hasProperty(arg, 'chart2')) {
@@ -212,7 +230,7 @@ ipc.on('sensor-data',function(event,arg) {
     var fftChartTemp = arg['chart2FFT'];
     var dataNumber2 = fftChartTemp.length;
     while(fftChart2.length > 0) {fftChart2.shift();}
-    for(var i=0; i<dataNumber2; i++) {fftChart2.push(fftChartTemp[i]);}
+    for(var i=0; i<maxFrequency; i++) {fftChart2.push(fftChartTemp[i]);}
   }
   // chart 3
   if(hasProperty(arg, 'chart3')) {
@@ -232,7 +250,7 @@ ipc.on('sensor-data',function(event,arg) {
     var fftChartTemp = arg['chart3FFT'];
     var dataNumber2 = fftChartTemp.length;
     while(fftChart3.length > 0) {fftChart3.shift();}
-    for(var i=0; i<dataNumber2; i++) {fftChart3.push(fftChartTemp[i]);}
+    for(var i=0; i<maxFrequency; i++) {fftChart3.push(fftChartTemp[i]);}
   }
   // times
   if( (seconds < arg[packetsCode.Router_second]) || (miliSeconds < arg[packetsCode.Router_milisec]) 

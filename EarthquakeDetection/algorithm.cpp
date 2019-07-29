@@ -8,7 +8,7 @@ Algorithm::Algorithm()
 
 void Algorithm::setParameters(float highPass, float lowPass, int longPoint, int shortWin, int staLtaTreshold, int winLength, double eew_a1, double eew_a2, double eew_a3, double eew_a4)
 {
-   f1 = highPass; f2 = lowPass; n1 = longPoint; ns = shortWin; thresh = staLtaTreshold; win_length = winLength;
+   f1 = highPass; f2 = lowPass; nl = longPoint; ns = shortWin; thresh = staLtaTreshold; win_length = winLength;
    w1 = f1 / (fs/2);
    w2 = f2 / (fs/2);
    a1 = eew_a1; a2 = eew_a2; a3 = eew_a3; a4 = eew_a4;
@@ -84,18 +84,19 @@ float Algorithm::runAlgorithm(QVector<double> data, double *erthMagnitude)
     int k1;
     *erthMagnitude = 0;
     QVector<double> pstime;
-    nt = data.length();
+//    nt = data.length();
+    nt = nl;
     QVector<double> sra;
     int temp = nt-ns;
-    QVector<double> aseries = absVector(data);
+    QVector<double> aseries = absVector(splitQvector(data, data.length()-(nl-1), data.length()));
     for(int i=0; i< temp; i++) {
-        if((i+1)>n1) {
-           double lta = meanQVector(splitQvector(aseries, i-n1, i) );
+//        if((i+1)>n1) {
+           double lta = meanQVector(splitQvector(aseries, i-nl, i) );
            double sta = meanQVector(splitQvector(aseries, i, i+ ns) );
            sra.append(sta/lta);
-        } else {
-           sra.append(0);
-        }
+//        } else {
+//           sra.append(0);
+//        }
     }
     temp = sra.length();
     QVector<double> k;
@@ -105,7 +106,8 @@ float Algorithm::runAlgorithm(QVector<double> data, double *erthMagnitude)
             pstime.append((i+1)*dt);
         }
     }
-    if(pstime.length() > 0) {
+    if(pstime.length() > 0)
+    {
 //        qDebug() << "pstime.length() > 0";
         k1 = k.first();
 //        qDebug() << "k1:"<< k1 << " ((3/dt)+k1) :" << ((3/dt)+k1);
@@ -114,7 +116,7 @@ float Algorithm::runAlgorithm(QVector<double> data, double *erthMagnitude)
         QVector<double> vel_signal3, dis_signal3;
         int pointsacc= acc_signal3.length();
         for(int i=0;i<(pointsacc-1);i++) {
-         vel_signal3.append(dt*trapz( splitQvector(acc_signal3, i, i+1) ) );
+          vel_signal3.append(dt*trapz( splitQvector(acc_signal3, i, i+1) ) );
         }
         double dmB = 0;
         for(int i=0;i<(pointsacc-2);i++) {
