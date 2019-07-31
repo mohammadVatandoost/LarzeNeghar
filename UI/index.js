@@ -27,6 +27,7 @@ net.createServer(function(sock) {
   serverSocket.write(eewConfigBuffer + "***");
   // We have a connection - a socket object is assigned to the connection automatically
  console.log('CONNECTED: ' + sock.remoteAddress +':'+ sock.remotePort);
+
   // Add a 'data' event handler to this instance of socket
   sock.on('data', function(data) {
     decodeSocketPacket(data);
@@ -58,7 +59,7 @@ console.log('Server listening on ' + HOST +':'+ PORT);
         }
 
        }) //, icon: __dirname+'/icons/raiwan.png'
-  
+    win.maximize();
     // and load the index.html of the app.
     win.loadFile('index.html')
   
@@ -69,7 +70,8 @@ console.log('Server listening on ' + HOST +':'+ PORT);
       db.findEEWConfig().then((response) => {
          if (typeof response !== 'undefined') {
           console.log("eewConfig");console.log(response);
-          eewConfigBuffer = JSON.stringify(response);
+          var temp = response; temp["packetType"] = "eewConfigType";
+          eewConfigBuffer = JSON.stringify(temp);
           if(win.webContents !== null) {
               win.webContents.send('set-EEWConfig', JSON.stringify(response));
           }
@@ -78,7 +80,7 @@ console.log('Server listening on ' + HOST +':'+ PORT);
            sendmessage["accTreshold"] = "5"; sendmessage["highPass"] = "0.1"; sendmessage["lowPass"] = "15" ;
            sendmessage["longPoint"] = "100"; sendmessage["shortPoint"] = "10"; sendmessage["staLtaTreshold"] = "5";
            sendmessage["winLength"] = "3"; sendmessage["a1"] = "1"; sendmessage["a2"] = "1.02";
-            sendmessage["a3"] = "1";  sendmessage["a4"] = "1.02";
+            sendmessage["a3"] = "1";  sendmessage["a4"] = "1.02";sendmessage["packetType"] = "eewConfigType"; 
            eewConfigBuffer = JSON.stringify(sendmessage);
            db.insertConfig(sendmessage["accTreshold"], sendmessage["highPass"], sendmessage["lowPass"],
             sendmessage["longPoint"], sendmessage["shortPoint"], sendmessage["staLtaTreshold"], 
@@ -97,7 +99,12 @@ console.log('Server listening on ' + HOST +':'+ PORT);
       // });
       }).catch((err)=> {console.log(err);});
       db.getEarthquakes().then((response) => {
-        console.log("getEarthquakes");console.log(response);
+        console.log("getEarthquakes");console.log(response.length);
+        for(var i=0; i< response.length; i++) {
+          var temp = response[i];
+          if(temp.discreption === null) {temp['discreption']="";}
+          win.webContents.send('earthquake', JSON.stringify(temp));
+        }
       }).catch((err)=> {console.log(err);});
 
   });

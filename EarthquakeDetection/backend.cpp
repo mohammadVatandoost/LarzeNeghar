@@ -712,7 +712,9 @@ void BackEnd::newDecode()
                 mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "y", yData, dataNumber);
 
                 int zData = (((signed char)dataByte[i] & 0xff) | ((signed char)dataByte[i + 1] << 8))*3.9;
-                qDebug() << "zData : " << zData << " zOffset "<<zOffset <<  " zData - zOffset:"<<zData - zOffset;
+//                if(UID == 41) {
+//                  qDebug() << UID <<" zData : " << zData << " zOffset "<<zOffset <<  " zData - zOffset:"<<zData - zOffset;
+//                }
 //                zData = zData - zOffset;
 
                 i++;i++;
@@ -1091,13 +1093,13 @@ void BackEnd::readTcpData()
               
         } else if(qJsonObject.value(packetType) == eewConfigType) {
               if(algorithmThread) {
-                  algorithmThread->setParameters(qJsonObject.value("highPass").toDouble(), qJsonObject.value("lowPass").toDouble(),
-                                                 qJsonObject.value("longPoint").toInt(), qJsonObject.value("shortPoint").toInt(),
-                                                 qJsonObject.value("staLtaTreshold").toInt(), qJsonObject.value("winLength").toInt(),
-                                                 qJsonObject.value("a1").toDouble(), qJsonObject.value("a2").toDouble(),
-                                                 qJsonObject.value("a3").toDouble(), qJsonObject.value("a4").toDouble());
-                  mList->setFilterFrequency(qJsonObject.value("highPass").toInt(),
-                                            qJsonObject.value("lowPass").toInt());
+                  algorithmThread->setParameters(qJsonObject.value("accTreshold").toString().toDouble(), qJsonObject.value("highPass").toString().toDouble(), qJsonObject.value("lowPass").toString().toDouble(),
+                                                 qJsonObject.value("longPoint").toString().toInt(), qJsonObject.value("shortPoint").toString().toInt(),
+                                                 qJsonObject.value("staLtaTreshold").toString().toInt(), qJsonObject.value("winLength").toString().toInt(),
+                                                 qJsonObject.value("a1").toString().toDouble(), qJsonObject.value("a2").toDouble(),
+                                                 qJsonObject.value("a3").toString().toDouble(), qJsonObject.value("a4").toString().toDouble());
+                  mList->setFilterFrequency(qJsonObject.value("highPass").toString().toInt(),
+                                            qJsonObject.value("lowPass").toString().toInt());
               }
         } else if(qJsonObject.value(packetType) == runTestType) {
             qDebug() << "runTest";

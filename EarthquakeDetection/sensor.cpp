@@ -116,7 +116,9 @@ void Sensor::addData(int year, int month, int day, int hour, int minute, int sec
     }
     // for algorithm
     dataBuffer.append(temp);
-    alghorithmDataBuffer.append(f.filter(valueWithOutOffset));
+    if( (offset != 0) || (counter > average_number) ) {
+       alghorithmDataBuffer.append(f.filter(valueWithOutOffset));
+    }
     if(abs(valueWithOutOffset) > abs(maxAccelarator)) {maxAccelarator = valueWithOutOffset;}
     if(earthquackHappen) {
 //        if( (dataBuffer.length() % 1000) == 0) {
