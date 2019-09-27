@@ -95,7 +95,7 @@ float Algorithm::runAlgorithm(QVector<double> data, bool isOnGround)
 //        if((i+1)>n1) {
 //           double lta = meanQVector(splitQvector(aseries, i-nl, i) );
     double lta = meanQVector(aseries);
-    double sta = meanQVector(splitQvector(aseries, aseries.length()-10, aseries.length()-1) );
+    double sta = meanQVector(splitQvector(aseries, aseries.length()-ns, aseries.length()-1) );
     double treshouldTemp = sta/lta;
     if(treshouldTemp > thresh) {
 //        k.append((i+1));

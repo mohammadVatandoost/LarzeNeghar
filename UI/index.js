@@ -227,6 +227,15 @@ ipc.on('releaseAlarm', function(event,arg) {
     }
 });
 
+// Earth Data
+ipc.on('deleteErth', function(event,arg) {
+    var temp = JSON.parse(arg);
+    var data = temp.data;
+    for(var i=0; i< data.length; i++) {
+      db.deleteEarthquake(data[i].id);
+    }
+});
+
 // stop alarm
 ipc.on('stopAlarm', function(event,arg) {
     var temp = {};
@@ -273,7 +282,8 @@ function decodeSocketPacket(data) {
     // console.log("data.includes(***) :");
     var packets = data.split("***");
     // console.log(packets.length);
-    for(var i=0; i<packets.length-1; i++) {  // -1 for split last
+   for(var i=0; i<packets.length-1; i++) {  // -1 for split last
+     if(IsJsonString(packets[i])) {
       var dataTemp = JSON.parse(packets[i]) ;
       // console.log(i+" packet : "+packets[i]);
       // console.log("decodeSocketPacket dataTemp.packetType: "+dataTemp.packetType + " packetsCode.newSensor :"+packetsCode.newSensorPacket);
@@ -358,7 +368,8 @@ function decodeSocketPacket(data) {
               win.webContents.send('earthquake', JSON.stringify(dataTemp));
           }
       }
-     } 
+     }
+    } 
   }
 }
 
@@ -389,3 +400,12 @@ function runDBTest(dataBase) {
 function hasProperty(object, key) {
     return object ? hasOwnProperty.call(object, key) : false;
  }
+
+ function IsJsonString(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}

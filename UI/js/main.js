@@ -8,6 +8,8 @@ var connected = false;
 
 const ipc = electron.ipcRenderer;
 var sensorsList = [] ;
+var earthquakesData = [] ;
+var earthquakeCounter = 0;
 // const dsp = require("./dsp.js");
 // var fft = new dsp.FFT(8, 1);
 //  console.log(fft.forward([1, 2, 3, 4, 5, 6, 7, 8]));
@@ -96,9 +98,13 @@ ipc.on('disconnected',function(event,arg) {
 // earthquake
 ipc.on('earthquake',function(event,arg) {
     var earthquakeData = JSON.parse(arg);
+    earthquakesData.push(earthquakeData);
+    console.log(earthquakeData);
+    var earthquakeId = "earthquake"+earthquakeCounter; earthquakeCounter = earthquakeCounter + 1;
     var temp = `
-        <tr>
-         <td class="text-center">`+earthquakeData.year+'/'+earthquakeData.month+'/'+earthquakeData.day+', '+earthquakeData.hour+':'+earthquakeData.minute+':'+earthquakeData.second+
+        <tr id="`+earthquakeId+`Row" >
+          <td class="text-center"><div class="form-check-inline"><label class="form-check-label"><input id="`+earthquakeId+`" type="checkbox" class="form-check-input" /></label></div></td>
+          <td class="text-center">`+earthquakeData.year+'/'+earthquakeData.month+'/'+earthquakeData.day+', '+earthquakeData.hour+':'+earthquakeData.minute+':'+earthquakeData.second+
          `</td><td class="text-center">`+earthquakeData.estimated_magnitude+`</td><td class="text-center">`+earthquakeData.PGA_L1+`</td>
          <td class="text-center">`+earthquakeData.PGA_L2+`</td><td class="text-center">`+earthquakeData.PGA_V+`</td><td class="text-center">`+earthquakeData.PBA_L1+`</td>
         <td class="text-center">`+earthquakeData.PBA_L2+`</td><td class="text-center">`+earthquakeData.PBA_V+`</td><td class="text-center">`+earthquakeData.discreption+`</td></tr>`;
@@ -206,7 +212,7 @@ stopAlarm.addEventListener('click', function () {
     });
 });
 
-// stop alarm
+// colibrate
 const colibrate = document.getElementById('colibrate');
 
 colibrate.addEventListener('click', function () {
@@ -214,6 +220,25 @@ colibrate.addEventListener('click', function () {
     notifier.notify({
         title: 'Notification',
         message: 'colibrate'
+    });
+});
+
+// delete earthquake
+const deleteSelectedItem = document.getElementById('deleteSelectedItem');
+
+deleteSelectedItem.addEventListener('click', function () {
+    var sendData = [];
+    for(var i=0; i< earthquakesData.length; i++) {
+       if($("#earthquake"+i).is(':checked')) {
+         sendData.push(earthquakesData[i]);
+         $("#earthquake"+i+'Row').remove();
+       }
+    }
+    // console.log("deleteSelectedItem : "); console.log(sendData);
+    ipc.send('deleteErth', JSON.stringify({data: sendData}));
+    notifier.notify({
+        title: 'Notification',
+        message: 'delete selected earthquake'
     });
 });
 

@@ -94,6 +94,6 @@ void AlgorithmThread::run()
           }
         }
       }
-       QThread::msleep(100);
+       QThread::msleep(10);
     }
 }

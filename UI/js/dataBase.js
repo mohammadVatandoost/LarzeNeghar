@@ -127,6 +127,19 @@ module.exports.insertEarthquake = function (year, month, day, hour, minute, seco
     });
 };
 
+module.exports.deleteEarthquake = function (id) {
+    console.log("deleteEarthquake");
+    console.log(`DELETE FROM Earthquakes WHERE id = `+id);
+    // insert one row into the langs table
+    db.run(`DELETE FROM Earthquakes WHERE id = `+id, [], function(err) {
+        if (err) {
+            return console.log(err.message);
+        }
+        // get the last insert id
+        console.log(`Earthquake deleted`);
+    });
+};
+
 module.exports.getEarthquakes = function () {
     console.log("getEarthquakes");
     var sql = 'SELECT * FROM Earthquakes ';
