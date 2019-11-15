@@ -233,9 +233,54 @@
     </div>
    <br/>
  </div>
-
-
 </div>
+<!-- The Modal -->
+<div id="myModal" class="modal">
+  <div class="modal-content">
+    <p id="modalMessage"></p>
+  </div>
+</div>
+<style>
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+}
+
+/* The Close Button */
+.close {
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+</style>
       <!-- Insert this line above script imports  -->
 <!-- <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script> -->
 
@@ -274,166 +319,19 @@
     // window.$ = window.jQuery = require('jquery');
          // require("./js/jquery.js");
          // require("./js/dsp.js");
+         // require("./js/notify.js");
          require("./js/Chart.min.js");
          require("./js/utils.js");
+         require("./js/toast.min.js"); 
          require("./js/main.js");
          require("./js/chartHandler.js"); 
+         
 
        // var fft = new FFT(10, 10);
        // fft.forward([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
        // var spectrum = fft.spectrum;
        // console.log("FFT :");
        // console.log(spectrum);
-      </script>
-      <script>
-          // require("./js/Chart.min.js");
-          // require("./js/utils.js");
-
-
-          // var counter = 0;
-          // var times = [];
-          // var data1 = [];
-          // var data2 = [];
-          // var data3 = [];
-
-          // for(var i=0; i < 200 ; i++) {
-          //     times.push("12:"+counter);
-          //     data1.push(randomScalingFactor());
-          //     data2.push(randomScalingFactor());
-          //     data3.push(randomScalingFactor());
-          //     counter = parseInt(counter) + 1 ;
-          // }
-
-          // var color = Chart.helpers.color;
-          // var config = {
-          //     type: 'line',
-          //     data: {
-          //         labels: times,
-          //         datasets: [{
-          //             label: 'My First dataset',
-          //             backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
-          //             borderColor: window.chartColors.red,
-          //             fill: false,
-          //             data: data1,
-          //         }, {
-          //             label: 'My Second dataset',
-          //             backgroundColor: color(window.chartColors.blue).alpha(0.5).rgbString(),
-          //             borderColor: window.chartColors.blue,
-          //             fill: false,
-          //             data: data2,
-          //         }, {
-          //             label: 'Dataset with point data',
-          //             backgroundColor: color(window.chartColors.green).alpha(0.5).rgbString(),
-          //             borderColor: window.chartColors.green,
-          //             fill: false,
-          //             data: data3,
-          //         }]
-          //     },
-          //     options: {
-          //         title: {
-          //             text: 'Chart.js Time Scale'
-          //         },
-          //         scales: {
-          //             yAxes: [{
-          //                 scaleLabel: {
-          //                     display: true,
-          //                     labelString: 'value'
-          //                 }
-          //             }]
-          //         },
-          //     }
-          // };
-
-          // window.onload = function() {
-          //     var ctx = document.getElementById('canvas').getContext('2d');
-          //     window.myLine = new Chart(ctx, config);
-
-          // };
-
-          // var myVar = setInterval(myTimer, 100);
-
-          // function myTimer() {
-          //     times.shift();
-          //     data1.shift();
-          //     data2.shift();
-          //     data3.shift();
-          //     times.push("12:"+counter);
-          //     data1.push(randomScalingFactor());
-          //     data2.push(randomScalingFactor());
-          //     data3.push(randomScalingFactor());
-          //     counter = parseInt(counter) + 1 ;
-          //     if(counter%5 === 0) {
-          //       window.myLine.update();  
-          //     }
-              
-          // }
-
-//          document.getElementById('randomizeData').addEventListener('click', function() {
-//              config.data.datasets.forEach(function(dataset) {
-//                  dataset.data.forEach(function(dataObj, j) {
-//                      if (typeof dataObj === 'object') {
-//                          dataObj.y = randomScalingFactor();
-//                      } else {
-//                          dataset.data[j] = randomScalingFactor();
-//                      }
-//                  });
-//              });
-//
-//              window.myLine.update();
-//          });
-
-//          var colorNames = Object.keys(window.chartColors);
-//          document.getElementById('addDataset').addEventListener('click', function() {
-//              var colorName = colorNames[config.data.datasets.length % colorNames.length];
-//              var newColor = window.chartColors[colorName];
-//              var newDataset = {
-//                  label: 'Dataset ' + config.data.datasets.length,
-//                  borderColor: newColor,
-//                  backgroundColor: color(newColor).alpha(0.5).rgbString(),
-//                  data: [],
-//              };
-//
-//              for (var index = 0; index < config.data.labels.length; ++index) {
-//                  newDataset.data.push(randomScalingFactor());
-//              }
-//
-//              config.data.datasets.push(newDataset);
-//              window.myLine.update();
-//          });
-
-//          document.getElementById('addData').addEventListener('click', function() {
-//              if (config.data.datasets.length > 0) {
-//                  config.data.labels.push(newDate(config.data.labels.length));
-//
-//                  for (var index = 0; index < config.data.datasets.length; ++index) {
-//                      if (typeof config.data.datasets[index].data[0] === 'object') {
-//                          config.data.datasets[index].data.push({
-//                              x: newDate(config.data.datasets[index].data.length),
-//                              y: randomScalingFactor(),
-//                          });
-//                      } else {
-//                          config.data.datasets[index].data.push(randomScalingFactor());
-//                      }
-//                  }
-//
-//                  window.myLine.update();
-//              }
-//          });
-
-//          document.getElementById('removeDataset').addEventListener('click', function() {
-//              config.data.datasets.splice(0, 1);
-//              window.myLine.update();
-//          });
-
-//          document.getElementById('removeData').addEventListener('click', function() {
-//              config.data.labels.splice(-1, 1); // remove the label first
-//
-//              config.data.datasets.forEach(function(dataset) {
-//                  dataset.data.pop();
-//              });
-//
-//              window.myLine.update();
-//          });
       </script>
     </body>
   </html>

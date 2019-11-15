@@ -670,9 +670,10 @@ void BackEnd::newDecode()
      sensorsInfoPacket.insert(packetType, sensorsInfoType);
      QJsonArray sensorsInfoArray;
      for(int i=0; i < dataByte.length() ; i++) {
+        bool sensorLossHappen = false;
         UID=((uint8_t)dataByte[i]); i++;
         sensorBatteryLevel = QString::number((int)dataByte[i]);
-        if((int)dataByte[i] == -1) {sensorBatteryLevel = "-";}
+        if((uint8_t)dataByte[i] == 255) {sensorBatteryLevel = "-"; sensorLossHappen = true;}
         i++;
         sensorLossLevel = QString::number(mList->getSensorLoss(routerNum, UID, (int)dataByte[i])); i++;
         int xOffset, yOffset, zOffset;
@@ -701,14 +702,22 @@ void BackEnd::newDecode()
                 int xData = (((signed char)dataByte[i] & 0xff) | ((signed char)dataByte[i + 1] << 8))*3.9;
 //                xData = xData - xOffset;
                 i++;i++;
-                xBordar.append(xData - xOffset);
+                if(sensorLossHappen) {
+//                    xBordar.append(0);
+                      qDebug() << "************Loss happend***********";
+                } else {xBordar.append(xData - xOffset);}
+
                 mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "x", xData, dataNumber);
 
                 int yData = (((signed char)dataByte[i] & 0xff) | ((signed char)dataByte[i + 1] << 8))*3.9;
 //                yData = yData - yOffset;
                 i++;i++;
 //                 qDebug() << "YData : " << yData ;
-                yBordar.append(yData - yOffset);
+                if(sensorLossHappen) {
+//                    yBordar.append(0);
+                    qDebug() << "************Loss happend***********";
+                } else {yBordar.append(yData - yOffset);}
+//                yBordar.append(yData - yOffset);
                 mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "y", yData, dataNumber);
 
                 int zData = (((signed char)dataByte[i] & 0xff) | ((signed char)dataByte[i + 1] << 8))*3.9;
@@ -718,7 +727,11 @@ void BackEnd::newDecode()
 //                zData = zData - zOffset;
 
                 i++;i++;
-                zBordar.append(zData - zOffset);
+                if(sensorLossHappen) {
+//                    zBordar.append(0);
+                    qDebug() << "************Loss happend***********";
+                } else {zBordar.append(zData - zOffset);}
+//                zBordar.append(zData - zOffset);
                 mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "z", zData, dataNumber);
 
                 dataNumber++;
@@ -738,7 +751,11 @@ void BackEnd::newDecode()
                 xData = (xData/pow(2,7)) - xOffset;
 //                int xData = (((signed char)dataByte[i] & 0xff) | (((signed char)dataByte[i + 1] & 0xff) << 8) | (((signed char)dataByte[i + 2] & 0xff) << 16));
                 i++;i++;i++;
-                xBordar.append(xData);
+                if(sensorLossHappen) {
+//                    xBordar.append(0);
+                    qDebug() << "************Loss happend***********";
+                } else {xBordar.append(xData);}
+
                 mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "x", xData, dataNumber);
 //                qDebug() << "xData :" << xData;
                 int yData;
@@ -751,7 +768,12 @@ void BackEnd::newDecode()
 //                qDebug() << "YData : " << yData;
                 i++;i++;i++;
 
-                yBordar.append(yData);
+//                yBordar.append(yData);
+                if(sensorLossHappen) {
+//                    yBordar.append(0);
+                    qDebug() << "************Loss happend***********";
+                } else {yBordar.append(yData);}
+
                 mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "y", yData, dataNumber);
 
 //                int zData = (((signed char)dataByte[i] & 0xff) | (((signed char)dataByte[i + 1] & 0xff) << 8) | (((signed char)dataByte[i + 2] & 0xff) << 16));
@@ -763,7 +785,12 @@ void BackEnd::newDecode()
                 }
                 zData = (zData/pow(2,7)) - zOffset;
                 i++;i++;i++;
-                zBordar.append(zData);
+//                zBordar.append(zData);
+                if(sensorLossHappen) {
+//                    zBordar.append(0);
+                    qDebug() << "************Loss happend***********";
+                } else {zBordar.append(zData);}
+
                 mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "z", zData, dataNumber);
 
                 dataNumber++;
