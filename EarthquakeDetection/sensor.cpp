@@ -87,6 +87,7 @@ void Sensor::addData(int year, int month, int day, int hour, int minute, int sec
 //        offset =0;
         qDebug()<< "sensor R"<<routerNumber<<" , S"<<sensorNumber<<" , "<<bordar <<" offset :" << offset<<" sum :" << sum;
         counter++;
+        sum = 0 ;
     }
     double valueWithOutOffset = value - offset ;
 //    if(bordar == "z") {
@@ -94,7 +95,7 @@ void Sensor::addData(int year, int month, int day, int hour, int minute, int sec
 //    }
     SensorData temp(minute, second, miliSecond, valueWithOutOffset);
     if(year == 0) {yearBuff = year; monthBuff = month; dayBuff = day; hourBuff = hour; minuteBuff = minute;}
-    if( (hourBuff != hour) && (savingOnLocal) && (isConnected) ) {
+    if( (hourBuff != hour) && (savingOnLocal || onGroundSensor || onRoofSensor) && (isConnected) ) {
         qDebug()<< "storing to file add data hourBuff:"<< hourBuff << " , "<< hour ;
         QVector<QStringList> dataStringList;
         for(int j = 0; j<dataList.length(); j++) {

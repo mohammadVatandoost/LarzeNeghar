@@ -625,6 +625,89 @@ void BackEnd::sendNack()
     sendSerial(jsonToString(qJsonObject)) ;
 }
 
+void BackEnd::readStdIn(string stdIn)
+{
+//    QByteArray data = pSocket->readAll();
+    QString temp = QString::fromStdString(stdIn);
+    qDebug() << "readStdIn :" << temp;
+    // check is right packet
+    if(temp.contains("***")) {
+      // if come multiple packets
+      QStringList packetList =  temp.split("***");
+      qDebug()<< "packetList.length() : " << packetList.length();
+      // loop through each packet
+      for(int i=0; i<packetList.length()-1; i++) {
+       QJsonDocument qJsonDocument = QJsonDocument::fromJson(packetList.at(i).toUtf8());
+       QJsonObject qJsonObject = qJsonDocument.object();
+       if(qJsonObject.contains(packetType)) {
+          if(qJsonObject.value(packetType) == selectChartsType) {
+              QJsonArray chartsJSON = qJsonObject.value("charts").toArray();
+              fft_second = qJsonObject.value(fft_chart_second).toString().toInt();
+              for(int i=0; i< chartsJSON.size();i++) {
+                 QJsonObject tempQJSONObject = chartsJSON.at(i).toObject();
+                 if(tempQJSONObject.contains("R") && tempQJSONObject.contains("S") && tempQJSONObject.contains("B")) {
+                     if(i==0) {
+                        chart1Router = tempQJSONObject.value("R").toString().toInt();
+                        chart1Senesor = tempQJSONObject.value("S").toString().toInt();
+                        chart1Bordar = tempQJSONObject.value("B").toString();
+                        chart1 = true;
+                     } else if(i==1) {
+                         chart2Router = tempQJSONObject.value("R").toString().toInt();
+                         chart2Senesor = tempQJSONObject.value("S").toString().toInt();
+                         chart2Bordar = tempQJSONObject.value("B").toString();
+                         chart2 = true;
+                     } else {
+                         chart3Router = tempQJSONObject.value("R").toString().toInt();
+                         chart3Senesor = tempQJSONObject.value("S").toString().toInt();
+                         chart3Bordar = tempQJSONObject.value("B").toString();
+                         chart3 = true;
+                     }
+               } else {
+                   if(i==0) {chart1 = false;} else if(i==1) {chart2 = false;} else {chart3 = false;}
+               }
+             }
+              qDebug()<< chart1Router <<","<< chart1Senesor <<","<< chart1Bordar <<","<< chart2Router <<","<< chart2Senesor <<","<< chart2Bordar <<","<< chart3Router<<","<< chart3Senesor<<","<< chart3Bordar ;
+              qDebug()<< "chart1 : "<< chart1 << " chart2 : " << chart2 << " chart3 : " << chart3 << "fft_second" << fft_second ;
+
+        } else if(qJsonObject.value(packetType) == eewConfigType) {
+              if(algorithmThread) {
+                  algorithmThread->setParameters(qJsonObject.value("accTreshold").toString().toDouble(), qJsonObject.value("highPass").toString().toDouble(), qJsonObject.value("lowPass").toString().toDouble(),
+                                                 qJsonObject.value("longPoint").toString().toInt(), qJsonObject.value("shortPoint").toString().toInt(),
+                                                 qJsonObject.value("staLtaTreshold").toString().toInt(), qJsonObject.value("winLength").toString().toInt(),
+                                                 qJsonObject.value("a1").toString().toDouble(), qJsonObject.value("a2").toDouble(),
+                                                 qJsonObject.value("a3").toString().toDouble(), qJsonObject.value("a4").toString().toDouble());
+                  mList->setFilterFrequency(qJsonObject.value("highPass").toString().toInt(),
+                                            qJsonObject.value("lowPass").toString().toInt());
+              }
+        } else if(qJsonObject.value(packetType) == runTestType) {
+            qDebug() << "runTest";
+            mList->runTest();
+        } else if(qJsonObject.value(packetType) == stopTestType) {
+            qDebug() << "stopTest";
+            mList->stopTest();
+        } else if(qJsonObject.value(packetType) == releaseAlarmType) {
+            sendAlarmOn();
+        } else if(qJsonObject.value(packetType) == stopAlarmType) {
+            sendAlarmOff();
+        } else if(qJsonObject.value(packetType) == colibrateType) {
+            mList->colibrate();
+        } else if(qJsonObject.value(packetType) == sensorsInfo) {
+           QJsonArray sensorsInfoArray = qJsonObject.value("sensorsInfo").toArray();
+           for(int i=0; i< sensorsInfoArray.size();i++) {
+              QJsonObject tempQJSONObject = sensorsInfoArray.at(i).toObject();
+              mList->updateSensorInfo(tempQJSONObject);
+           }
+           bool activateAlgorithm = qJsonObject.value("activateAlgorithm").toBool() ;
+           algorithmThread->setRunAlghoritm(activateAlgorithm);
+        }
+       } else {
+         qDebug() << "readTcpData does not have packet type";
+       }
+      }
+
+    }
+}
+
 bool BackEnd::checkDataSendToChart1()
 {
     if(chart1) {
@@ -704,10 +787,13 @@ void BackEnd::newDecode()
                 i++;i++;
                 if(sensorLossHappen) {
 //                    xBordar.append(0);
-                      qDebug() << "************Loss happend***********";
-                } else {xBordar.append(xData - xOffset);}
+//                      qDebug() << "************Loss happend***********";
+                } else {
+                    xBordar.append(xData - xOffset);
+                    mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "x", xData, dataNumber);
+                }
 
-                mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "x", xData, dataNumber);
+
 
                 int yData = (((signed char)dataByte[i] & 0xff) | ((signed char)dataByte[i + 1] << 8))*3.9;
 //                yData = yData - yOffset;
@@ -715,10 +801,13 @@ void BackEnd::newDecode()
 //                 qDebug() << "YData : " << yData ;
                 if(sensorLossHappen) {
 //                    yBordar.append(0);
-                    qDebug() << "************Loss happend***********";
-                } else {yBordar.append(yData - yOffset);}
+//                    qDebug() << "************Loss happend***********";
+                } else {
+                    yBordar.append(yData - yOffset);
+                    mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "y", yData, dataNumber);
+                }
 //                yBordar.append(yData - yOffset);
-                mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "y", yData, dataNumber);
+
 
                 int zData = (((signed char)dataByte[i] & 0xff) | ((signed char)dataByte[i + 1] << 8))*3.9;
 //                if(UID == 41) {
@@ -729,10 +818,13 @@ void BackEnd::newDecode()
                 i++;i++;
                 if(sensorLossHappen) {
 //                    zBordar.append(0);
-                    qDebug() << "************Loss happend***********";
-                } else {zBordar.append(zData - zOffset);}
+//                    qDebug() << "************Loss happend***********";
+                } else {
+                    zBordar.append(zData - zOffset);
+                    mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "z", zData, dataNumber);
+                }
 //                zBordar.append(zData - zOffset);
-                mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "z", zData, dataNumber);
+
 
                 dataNumber++;
             }
@@ -748,15 +840,18 @@ void BackEnd::newDecode()
                 } else {
                     xData = (((signed char)dataByte[i] & 0xff) | (((signed char)dataByte[i + 1] & 0xff) << 8) | (((signed char)dataByte[i+2] & 0xff) << 16) );
                 }
-                xData = (xData/pow(2,7)) - xOffset;
+                xData = (xData/pow(2,7));
 //                int xData = (((signed char)dataByte[i] & 0xff) | (((signed char)dataByte[i + 1] & 0xff) << 8) | (((signed char)dataByte[i + 2] & 0xff) << 16));
                 i++;i++;i++;
                 if(sensorLossHappen) {
 //                    xBordar.append(0);
-                    qDebug() << "************Loss happend***********";
-                } else {xBordar.append(xData);}
+//                    qDebug() << "************Loss happend***********";
+                } else {
+                    xBordar.append(xData - xOffset);
+                    mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "x", xData, dataNumber);
+                }
 
-                mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "x", xData, dataNumber);
+
 //                qDebug() << "xData :" << xData;
                 int yData;
                 if( (dataByte[i+2] & 0xf0) == 0xf0) {
@@ -764,17 +859,20 @@ void BackEnd::newDecode()
                 } else {
                     yData = (((signed char)dataByte[i] & 0xff) | (((signed char)dataByte[i + 1] & 0xff) << 8) | (((signed char)dataByte[i+2] & 0xff) << 16) );
                 }
-                yData = (yData/pow(2, 7)) - yOffset;
+                yData = (yData/pow(2, 7)) ;
 //                qDebug() << "YData : " << yData;
                 i++;i++;i++;
 
 //                yBordar.append(yData);
                 if(sensorLossHappen) {
 //                    yBordar.append(0);
-                    qDebug() << "************Loss happend***********";
-                } else {yBordar.append(yData);}
+//                    qDebug() << "************Loss happend***********";
+                } else {
+                    yBordar.append(yData - yOffset);
+                    mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "y", yData, dataNumber);
+                }
 
-                mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "y", yData, dataNumber);
+
 
 //                int zData = (((signed char)dataByte[i] & 0xff) | (((signed char)dataByte[i + 1] & 0xff) << 8) | (((signed char)dataByte[i + 2] & 0xff) << 16));
                 int zData;
@@ -783,15 +881,18 @@ void BackEnd::newDecode()
                 } else {
                     zData = (((signed char)dataByte[i] & 0xff) | (((signed char)dataByte[i + 1] & 0xff) << 8) | (((signed char)dataByte[i+2] & 0xff) << 16) );
                 }
-                zData = (zData/pow(2,7)) - zOffset;
+                zData = (zData/pow(2,7));
                 i++;i++;i++;
 //                zBordar.append(zData);
                 if(sensorLossHappen) {
 //                    zBordar.append(0);
-                    qDebug() << "************Loss happend***********";
-                } else {zBordar.append(zData);}
+//                    qDebug() << "************Loss happend***********";
+                } else {
+                    zBordar.append(zData - zOffset);
+                    mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "z", zData, dataNumber);
+                }
 
-                mList->addData(routerMinute, routerSecnd, routerMiliSec, routerNum, UID, "z", zData, dataNumber);
+
 
                 dataNumber++;
             }

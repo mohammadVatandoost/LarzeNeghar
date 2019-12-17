@@ -90,6 +90,11 @@ var config = {
                   title: {
                       text: 'Sensors Data'
                   },
+                  elements: {
+                    point:{
+                        radius: 0
+                    }
+                  },
                   scales: {
                       yAxes: [{
                           scaleLabel: {
@@ -137,6 +142,11 @@ var configFFTChart = {
               options: {
                   title: {
                       text: 'FFT'
+                  },
+                  elements: {
+                    point:{
+                        radius: 0
+                    }
                   },
                   scales: {
                       yAxes: [{
@@ -191,7 +201,7 @@ var configFFTChart = {
 
 // get new sensor data 
 ipc.on('sensor-data',function(event,arg) {
-  console.log("sensor-data");console.log(arg);
+  // console.log("sensor-data");console.log(arg);
   var dataNumber = 0; var flagPacketCounter = true; 
   arg = JSON.parse(arg);
   // chart 1
@@ -256,7 +266,8 @@ ipc.on('sensor-data',function(event,arg) {
   if( (seconds < arg[packetsCode.Router_second]) || (miliSeconds < arg[packetsCode.Router_milisec]) 
     || (Math.abs(seconds - arg[packetsCode.Router_second]) > 50)  ) {
       for(var i =0; i<dataNumber; i++) {
-         times.push(arg[packetsCode.Router_second]+":"+arg[packetsCode.Router_milisec] );
+        var timesString = arg[packetsCode.Router_second]+":"+arg[packetsCode.Router_milisec];
+        times.push(timesString.substring(0, timesString.length-2) );
       }
       if(packetCounter > numberOfDataShowing ) {
         while(times.length > numberOfDataShowing) {

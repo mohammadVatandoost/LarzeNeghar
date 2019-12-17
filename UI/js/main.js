@@ -50,6 +50,12 @@ function showMessage(text) {
     setTimeout(function(){ modal.style.display = "none"; }, 2000);
 }
 
+function showMessage_10(text) {
+    $("#modalMessage").text(text);
+    modal.style.display = "block";
+    setTimeout(function(){ modal.style.display = "none"; }, 10000);
+}
+
 // get new sensor data 
 ipc.on('new-sensor',function(event,arg) {
 	console.log("new-sensor");console.log(arg);
@@ -259,7 +265,7 @@ colibrate.addEventListener('click', function () {
         title: 'Notification',
         message: 'colibrate'
     });
-    showMessage("colibrate");
+    showMessage_10("colibrate");
 });
 
 // delete earthquake
