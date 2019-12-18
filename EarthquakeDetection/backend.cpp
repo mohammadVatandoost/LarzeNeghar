@@ -18,7 +18,9 @@ BackEnd::BackEnd(QObject *parent) : QObject(parent)
     connect( pSocket, SIGNAL(readyRead()), SLOT(readTcpData()) );
     pSocket->connectToHost("127.0.0.1", 6969);
     if( pSocket->waitForConnected() ) {
-       pSocket->write( "connected" );
+        pSocket->write("connected");
+//       writeToUi( string("connected") );
+//       writeToUi( "connected" );
     }
 
 //    QFileInfoList list = directory.entryInfoList();
@@ -627,9 +629,8 @@ void BackEnd::sendNack()
 
 void BackEnd::readStdIn(string stdIn)
 {
-//    QByteArray data = pSocket->readAll();
     QString temp = QString::fromStdString(stdIn);
-    qDebug() << "readStdIn :" << temp;
+    qDebug() << "*********readStdIn :" << temp;
     // check is right packet
     if(temp.contains("***")) {
       // if come multiple packets
@@ -771,10 +772,12 @@ void BackEnd::newDecode()
         qJsonObjectTemp.insert(Router_minute, routerMinute);
         qJsonObjectTemp.insert(Router_second, routerSecnd);
         qJsonObjectTemp.insert(Router_milisec, routerMiliSec);
-        sensorInfo.insert("sensor_number", UID);
-        sensorInfo.insert(antenSignal, sensorLossLevel);
-        sensorInfo.insert(Sensor_Battery_Level, sensorBatteryLevel);
-        sensorsInfoArray.push_front(sensorInfo);
+        if(sensorInfoCounter  < mList->sensorItems.size()) {
+          sensorInfo.insert("sensor_number", UID);
+          sensorInfo.insert(antenSignal, sensorLossLevel);
+          sensorInfo.insert(Sensor_Battery_Level, sensorBatteryLevel);
+          sensorsInfoArray.push_front(sensorInfo);
+        }
         QJsonArray xBordar, yBordar, zBordar;
         uint8_t dataNumber = 0;
 //        qDebug() << "UID : " << UID << " , " << sensorBatteryLevel << " , " << sensorLossLevel;
@@ -908,10 +911,16 @@ void BackEnd::newDecode()
 //        }
      }
      //send sensorsInfo
-     sensorsInfoPacket.insert(sensors_Info, sensorsInfoArray);
-     QJsonDocument doc(sensorsInfoPacket);
-//       qDebug() << "send data for chart :"<< doc.toJson(QJsonDocument::Compact);
-     pSocket->write(doc.toJson(QJsonDocument::Compact)+"***");
+    if(sensorInfoCounter  < mList->sensorItems.size())  {
+       sensorsInfoPacket.insert(sensors_Info, sensorsInfoArray);
+       QJsonDocument doc(sensorsInfoPacket);
+       pSocket->write(doc.toJson(QJsonDocument::Compact)+"***");
+
+    }
+    sensorInfoCounter = sensorInfoCounter + 1 ;
+    if(sensorInfoCounter > mList->sensorItems.size()*3) {
+      sensorInfoCounter = 0;
+    }
  } else {
      qDebug() << "**************check sum is wrong";sendNack();
  }
@@ -1015,6 +1024,22 @@ QJsonArray BackEnd::calculateFFT(QVector<double> temp)
     fftw_cleanup();
     return fft_value;
 }
+
+void BackEnd::writeToUi(const char *dataToUi)
+{
+   qDebug()<<"wreteToui const char :" <<dataToUi;
+   pSocket->write( dataToUi);
+}
+
+//void BackEnd::writeToUi(QString dataToUi)
+//{
+//   pSocket->write(dataToUi.toStdString().c_str()) ;
+//}
+
+//void BackEnd::writeToUi(string dataToUi)
+//{
+//   pSocket->write(dataToUi.c_str()) ;
+//}
 
 void BackEnd::appendItem()
 {
@@ -1157,7 +1182,7 @@ void BackEnd::recieveSerialPort()
                         newDecode();
                         resetPacketSwitch();packetTimerCounter = 11 ;
                     } else {
-                        qDebug() << "not stop "<<byteCounter << " : " <<data[i];
+//                        qDebug() << "not stop "<<byteCounter << " : " <<data[i];
                     }
 
                 }

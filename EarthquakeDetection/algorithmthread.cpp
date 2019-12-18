@@ -22,7 +22,7 @@ void AlgorithmThread::setParameters(double accThreshould, float highPass, float 
 void AlgorithmThread::setRunAlghoritm(bool temp)
 {
     runAlghorithm = temp ;
-    qDebug() << "setRunAlghoritm :" << runAlghorithm ;
+//    qDebug() << "setRunAlghoritm :" << runAlghorithm ;
 }
 
 void AlgorithmThread::run()
@@ -43,17 +43,17 @@ void AlgorithmThread::run()
                 float earthquake_state = algorithm.runAlgorithm(sensorsList->sensorItems.at(i).alghorithmDataBuffer, true);
                 if(earthquake_state == more_than_treshold) {
                     earthquakeHappen();
-                    qDebug() << "AlgorithmThread onGroundSensor more_than_treshold";
+//                    qDebug() << "AlgorithmThread onGroundSensor more_than_treshold";
                 } else if(earthquake_state != no_earthquake) {
                     earthquakeHappenFlag = true;
                     k1 = earthquake_state;
                     earthquakeHappen();wichSensor = isOnGouend;
-                    qDebug() << "AlgorithmThread onGroundSensor Earthqiake Happen";
+//                    qDebug() << "AlgorithmThread onGroundSensor Earthqiake Happen";
                 }
             } else if(sensorsList->sensorItems.at(i).onRoofSensor && (sensorsList->sensorItems.at(i).bordar == "z") && (sensorsList->sensorItems.at(i).alghorithmDataBuffer.length()>100) ) {
                 float earthquake_state = algorithm.runAlgorithm(sensorsList->sensorItems.at(i).alghorithmDataBuffer, false);
                 if(earthquake_state != no_earthquake) {
-                    qDebug() << "AlgorithmThread onRoofSensor Earthqiake";
+//                    qDebug() << "AlgorithmThread onRoofSensor Earthqiake";
                      earthquakeHappenFlag = true;
                      k1 = earthquake_state; wichSensor = isOnRoof;
                      earthquakeHappen();
@@ -71,7 +71,7 @@ void AlgorithmThread::run()
                    } else {
                             earthquakeHappenFlag = false;
                             emit storeEarthquakeData();
-                            qDebug() << "AlgorithmThread onGroundSensor earthquake_no_Alarm storeEarthquakeData" ;
+//                            qDebug() << "AlgorithmThread onGroundSensor earthquake_no_Alarm storeEarthquakeData" ;
                    }
               }
               if(sensorsList->sensorItems.at(i).onRoofSensor && (sensorsList->sensorItems.at(i).bordar == "z") && (wichSensor == isOnRoof) &&
@@ -84,12 +84,13 @@ void AlgorithmThread::run()
                    } else {
                        earthquakeHappenFlag = false;
                        emit storeEarthquakeData();
-                       qDebug() << "AlgorithmThread onRoofSensor earthquake_Alarm storeEarthquakeData";
+//                       qDebug() << "AlgorithmThread onRoofSensor earthquake_Alarm storeEarthquakeData";
                    }
               }
               // does not stay for ever in this mode
               if(!sensorsList->sensorItems.at(i).earthquackHappen){
-                  earthquakeHappenFlag = false;qDebug() << "AlgorithmThread earthquake measur time out";
+                  earthquakeHappenFlag = false;
+//                  qDebug() << "AlgorithmThread earthquake measur time out";
               }
           }
         }

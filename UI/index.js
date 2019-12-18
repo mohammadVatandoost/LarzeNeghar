@@ -5,6 +5,7 @@ const path = require('path');
 const packetsCode = require('./js/packetsCode');
 const db = require('./js/dataBase');
 const { exec } = require('child_process');
+const { spawn } = require('child_process');
 var sensors = [];
 var activateAlgorithm = true;
 var eewConfigBuffer;
@@ -89,14 +90,17 @@ console.log('Server listening on ' + HOST +':'+ PORT);
               win.webContents.send('set-EEWConfig', JSON.stringify(sendmessage));
           }
          }
-         // exec('./EarthquakeDetection', (err, stdout, stderr) => {
-          // console.log("run exe");
-          // if (err) {
-            //   console.error(err);
-              // return;
-          // }
-           //console.log(stdout);
-      // });
+
+        // const ls = spawn('./EarthquakeDetection');
+         exec('./EarthquakeDetection', (err, stdout, stderr) => {
+          console.log("run exe");
+          if (err) {
+              console.error(err);
+              return;
+          }
+           console.log(stdout);
+        });
+
       }).catch((err)=> {console.log(err);});
       db.getEarthquakes().then((response) => {
         console.log("getEarthquakes");console.log(response.length);
@@ -171,7 +175,7 @@ ipc.on('chartsApply', function(event,arg) {
   var chartsTemp = [];
   for(var i=0;i<charts.length; i++) {
     if(hasProperty(charts[i], "description")) {
-      console.log("has description");
+      // console.log("has description");
       //console.log(charts[i]);console.log(charts[i]["B"]);console.log(charts[i].B);
        db.findSensorWithDes(charts[i].description, charts[i].B).then((response) => {
         console.log(response);

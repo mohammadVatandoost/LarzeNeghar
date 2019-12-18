@@ -22,6 +22,9 @@
 #include <QFile>
 #include <algorithmthread.h>
 #include <fftw3.h>
+#include <iostream>
+
+using namespace std;
 
 class BackEnd : public QObject
 {
@@ -62,6 +65,7 @@ public:
     void resetPacketSwitch();
     bool checkCheckSum(QString jsonPacket, int checkSum);
     void sendNack();
+    void readStdIn(string stdIn);
     bool checkDataSendToChart1();
     bool checkDataSendToChart2();
     bool checkDataSendToChart3();
@@ -91,6 +95,11 @@ public:
     QVector<double> chart_fft1, chart_fft2, chart_fft3;
     QJsonArray calculateFFT(QVector<double> temp);
     int fft_second = 5;
+    void writeToUi(const char *dataToUi);
+//    void writeToUi(QString dataToUi);
+//    void writeToUi(string dataToUi);
+    // for sensorInfo Sending
+    uint8_t sensorInfoCounter = 0;
 signals:
 
 public slots:

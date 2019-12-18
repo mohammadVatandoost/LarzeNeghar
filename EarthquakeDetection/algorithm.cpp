@@ -107,7 +107,7 @@ float Algorithm::runAlgorithm(QVector<double> data, bool isOnGround)
 //            qDebug() << "isOnGround check Acc_Threshould :"<<Acc_Threshould;
             for(int i=0; i< tempLength; i++) {
                 if(abs(dataSegmentation[i])>Acc_Threshould) {
-                    qDebug() << "runAlgorithm :" <<dataSegmentation[i] << " , "<<Acc_Threshould;
+//                    qDebug() << "runAlgorithm :" <<dataSegmentation[i] << " , "<<Acc_Threshould;
                     return more_than_treshold;
                 }
             }
