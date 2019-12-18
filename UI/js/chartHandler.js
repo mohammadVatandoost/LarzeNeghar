@@ -93,6 +93,9 @@ var config = {
                   elements: {
                     point:{
                         radius: 0
+                    },
+                    line: {
+                       tension: 0 // disables bezier curves
                     }
                   },
                   scales: {
@@ -108,10 +111,14 @@ var config = {
                         }
                       }]
                   },
-                  animation: {
-                     duration: 0
-                  },
-                  events: []
+                   animation: {
+                      duration: 0 // general animation time
+                   },
+                   hover: {
+                     animationDuration: 0 // duration of animations when hovering an item
+                   },
+                   responsiveAnimationDuration: 0,
+                   events: []
               }
           };
 // config for FFT chart
@@ -146,6 +153,9 @@ var configFFTChart = {
                   elements: {
                     point:{
                         radius: 0
+                    },
+                    line: {
+                       tension: 0 // disables bezier curves
                     }
                   },
                   scales: {
@@ -157,8 +167,12 @@ var configFFTChart = {
                       }]
                   },
                   animation: {
-                     duration: 0
-                  },
+                      duration: 0 // general animation time
+                   },
+                   hover: {
+                     animationDuration: 0 // duration of animations when hovering an item
+                   },
+                   responsiveAnimationDuration: 0,
                   events: []
               }
           };

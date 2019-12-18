@@ -32,6 +32,7 @@ BackEnd::BackEnd(QObject *parent) : QObject(parent)
 
 BackEnd::~BackEnd()
 {
+    if( serial->isOpen() ) {serial->close();}
     if(pSocket) {delete pSocket;}
     if(timer) {delete timer;}
     if(packetTimer) {delete packetTimer;}
@@ -996,6 +997,7 @@ void BackEnd::sendChartData(QJsonObject tempQJsonObject, int sensorUID, QJsonArr
     if(couterCheck > 0) {
       QJsonDocument doc(tempQJsonObject);
 //        qDebug() << "send data for chart :"<< doc.toJson(QJsonDocument::Compact);
+//      cout<< string(doc.toJson(QJsonDocument::Compact))<<"***";
       pSocket->write(doc.toJson(QJsonDocument::Compact)+"***");
     }
 }

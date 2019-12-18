@@ -16,6 +16,7 @@
 
 int main(int argc, char *argv[])
 {
+//    cout<< "app started"<<endl;
     QCoreApplication a(argc, argv);
     qDebug()<< "earthquake detector";
     SensorsList sensorsList;

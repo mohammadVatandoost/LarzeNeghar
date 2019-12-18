@@ -20,6 +20,8 @@ var HOST = '127.0.0.1';
 var PORT = 6969;
 
 var serverSocket;
+var EarthquakeDetection;
+var stdDataBuf = "";
 // Create a server instance, and chain the listen function to it
 // The function passed to net.createServer() becomes the event handler for the 'connection' event
 // The sock object the callback function receives UNIQUE for each connection
@@ -91,15 +93,26 @@ console.log('Server listening on ' + HOST +':'+ PORT);
           }
          }
 
-        // const ls = spawn('./EarthquakeDetection');
-         exec('./EarthquakeDetection', (err, stdout, stderr) => {
-          console.log("run exe");
-          if (err) {
-              console.error(err);
-              return;
-          }
-           console.log(stdout);
+        EarthquakeDetection = spawn('./EarthquakeDetection');
+        EarthquakeDetection.stdout.on('data', (data) => {
+            // console.log(`-------------stdout : ${data}`);
+            // decodeStdPacket(data);
         });
+        EarthquakeDetection.stderr.on('data', (data) => {
+           // console.error(`stderr: ${data}`);
+        });
+
+        EarthquakeDetection.on('close', (code) => {
+             console.log(`child process exited with code ${code}`);
+        });
+        //  exec('./EarthquakeDetection', (err, stdout, stderr) => {
+        //   console.log("run exe");
+        //   if (err) {
+        //       console.error(err);
+        //       return;
+        //   }
+        //    console.log(stdout);
+        // });
 
       }).catch((err)=> {console.log(err);});
       db.getEarthquakes().then((response) => {
@@ -120,6 +133,9 @@ console.log('Server listening on ' + HOST +':'+ PORT);
       // when you should delete the corresponding element.
       //   serverSocket.close();
       // serverSocket.close();
+      console.log("window closed");
+      EarthquakeDetection.stdin.pause();
+      EarthquakeDetection.kill();
       win = null;
       db.dataBase.close((err) => {
           if (err) {
@@ -278,6 +294,38 @@ ipc.on('saveSensorInfo', function(event,arg) {
     }
 });
 
+function decodeStdPacket(data) {
+
+  data = data + ''; //convert to string
+  stdDataBuf = stdDataBuf + data;
+  // console.log("decodeStdPacket : "+stdDataBuf);
+  if(stdDataBuf.includes("***")) {
+    // console.log("data.includes(***) :");
+    var packets = stdDataBuf.split("***");
+    if(packets.length > 0) {
+      stdDataBuf = "";
+    }
+    // console.log("--------------packets.length:"+packets.length);
+   for(var i=0; i<packets.length; i++) {  // -1 for split last
+     if(IsJsonString(packets[i])) {
+      var dataTemp = JSON.parse(packets[i]) ;
+      if(dataTemp.packetType === packetsCode.receiveChartDataType) {
+          if(win.webContents !== null) {
+              win.webContents.send('sensor-data', packets[i]);
+          }
+      }
+     } else {
+      if(i >0) {
+         stdDataBuf = stdDataBuf + packets[i];
+      }
+      // console.log(i + ", "+packets.length+",decodeStdPacket is not Json:"+packets[i]);
+     }
+   }
+  } else {
+     // console.log("-------------------decodeStdPacket does not contain ****");
+  }
+}
+
 // socket packet controller
 function decodeSocketPacket(data) {
   data = data + ''; //convert to string
@@ -403,7 +451,7 @@ function runDBTest(dataBase) {
 
 function hasProperty(object, key) {
     return object ? hasOwnProperty.call(object, key) : false;
- }
+}
 
  function IsJsonString(str) {
     try {
