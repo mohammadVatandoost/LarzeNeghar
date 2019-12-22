@@ -23,6 +23,8 @@ BackEnd::BackEnd(QObject *parent) : QObject(parent)
 //       writeToUi( "connected" );
     }
 
+    folderDirectory = jsonStoring.getFileDirectory();
+    qDebug()<< "----------folderDirectory:"<<folderDirectory;
 //    QFileInfoList list = directory.entryInfoList();
 //    qDebug()<< "list size :" << list.size();
 //    for(int i=0; i<list.size(); i++) {
@@ -44,6 +46,7 @@ void BackEnd::setSensorsList(SensorsList *sensorsList)
 {
     qDebug() << "function start :" << "setSensorsList";
     mList = sensorsList;
+    mList->folderDirectory = folderDirectory;
     mList->setTCPSocket(pSocket);
 
     // timer for connection check
@@ -927,6 +930,15 @@ void BackEnd::newDecode()
  }
 }
 
+void BackEnd::setFileDirectory(QString fileDirectory)
+{
+    folderDirectory = fileDirectory ;
+    jsonStoring.storeFileDirectory(folderDirectory);
+    for(int i=0; i<mList->sensorItems.size(); i++) {
+        mList->sensorItems[i].fileDirectory = fileDirectory;
+    }
+}
+
 QJsonArray BackEnd::calculateAverage(QJsonArray dataArray, QVector<double> *fft_vector)
 {
     double sum = 0;
@@ -1082,6 +1094,8 @@ void BackEnd::timerSlot()
 
 //            }
 
+        } else {
+
         }
     } else {
         serial->close();
@@ -1094,6 +1108,13 @@ void BackEnd::timerSlot()
     }
     timerCounter++;
     if(timerCounter == 30) {
+//        if(!pSocket->state() == QTcpSocket::ConnectedState) {
+//            qDebug() << "socket does not connected";
+//            pSocket->connectToHost("127.0.0.1", 6969);
+//            if( pSocket->waitForConnected() ) {
+//                pSocket->write("connected");
+//            }
+//        }
         updateTime();timerCounter = 0;
         qDebug()<< storage.bytesAvailable()/1000/1000 << "/" << storage.bytesTotal()/1000/1000 << "MB";
 //        qDebug() << " Storage is low " ;
@@ -1264,6 +1285,8 @@ void BackEnd::readTcpData()
             mList->stopTest();
         } else if(qJsonObject.value(packetType) == releaseAlarmType) {
             sendAlarmOn();
+        } else if(qJsonObject.value(packetType) == chooseFile) {
+               setFileDirectory( qJsonObject.value("path").toString() );
         } else if(qJsonObject.value(packetType) == stopAlarmType) {
             sendAlarmOff();
         } else if(qJsonObject.value(packetType) == colibrateType) {

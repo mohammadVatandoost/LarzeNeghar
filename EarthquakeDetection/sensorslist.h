@@ -65,7 +65,7 @@ public:
     Q_INVOKABLE int getRouterNumberAt(int i);
     Q_INVOKABLE int getSensorNumberAt(int i);
     double getLastDataTime(QString bordar);
-
+    QString folderDirectory = "";
     int prevZoomX=0;
     int prevZoomY=0;
     int prevZoomZ=0;

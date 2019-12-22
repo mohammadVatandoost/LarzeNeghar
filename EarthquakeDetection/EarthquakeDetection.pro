@@ -33,7 +33,8 @@ SOURCES += \
     LowPassFilter.cpp \
     Cascade.cpp \
     State.cpp \
-    PoleFilter.cpp
+    PoleFilter.cpp \
+    jsonstoring.cpp
 
 LIBS += /usr/local/lib/libfftw3.a
 
@@ -60,4 +61,5 @@ HEADERS += \
     State.h \
     Types.h \
     PoleFilter.h \
-    MathSupplement.h
+    MathSupplement.h \
+    jsonstoring.h

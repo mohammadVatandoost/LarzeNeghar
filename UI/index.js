@@ -1,5 +1,6 @@
 const { app, BrowserWindow } = require('electron')
 const electron = require('electron');
+const dialog = electron.dialog;
 const ipc = electron.ipcMain;
 const path = require('path');  
 const packetsCode = require('./js/packetsCode');
@@ -93,18 +94,18 @@ console.log('Server listening on ' + HOST +':'+ PORT);
           }
          }
 
-        EarthquakeDetection = spawn('./EarthquakeDetection');
-        EarthquakeDetection.stdout.on('data', (data) => {
-            // console.log(`-------------stdout : ${data}`);
-            // decodeStdPacket(data);
-        });
-        EarthquakeDetection.stderr.on('data', (data) => {
-           // console.error(`stderr: ${data}`);
-        });
+        // EarthquakeDetection = spawn('./EarthquakeDetection');
+        // EarthquakeDetection.stdout.on('data', (data) => {
+        //     // console.log(`-------------stdout : ${data}`);
+        //     // decodeStdPacket(data);
+        // });
+        // EarthquakeDetection.stderr.on('data', (data) => {
+        //    // console.error(`stderr: ${data}`);
+        // });
 
-        EarthquakeDetection.on('close', (code) => {
-             console.log(`child process exited with code ${code}`);
-        });
+        // EarthquakeDetection.on('close', (code) => {
+        //      console.log(`child process exited with code ${code}`);
+        // });
         //  exec('./EarthquakeDetection', (err, stdout, stderr) => {
         //   console.log("run exe");
         //   if (err) {
@@ -134,8 +135,8 @@ console.log('Server listening on ' + HOST +':'+ PORT);
       //   serverSocket.close();
       // serverSocket.close();
       console.log("window closed");
-      EarthquakeDetection.stdin.pause();
-      EarthquakeDetection.kill();
+      // EarthquakeDetection.stdin.pause();
+      // EarthquakeDetection.kill();
       win = null;
       db.dataBase.close((err) => {
           if (err) {
@@ -215,6 +216,29 @@ ipc.on('chartsApply', function(event,arg) {
         serverSocket.write(JSON.stringify(sendmessage) + "***");
     }
   }
+});
+// chooseFolder
+ipc.on('chooseFolder', function() {
+    console.log('chooseFolder');
+
+    dialog.showOpenDialog(win, {
+       properties: ['openFile', 'openDirectory']
+    }).then(result => {
+       console.log("dir");
+       if(!result.canceled) {
+         var temp = {};
+         temp[packetsCode.packetType] = packetsCode.chooseFile;
+         temp["path"] = result.filePaths[0];
+         console.log("chooseFile : "+JSON.stringify(temp)+"***");
+         if(serverSocket !== null) {
+           serverSocket.write(JSON.stringify(temp) + "***");
+         }
+       }
+    }).catch(err => {
+       console.log("dir");
+       console.log(err)
+    });
+
 });
 
 //  run tests

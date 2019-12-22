@@ -1,4 +1,5 @@
 const electron = require("electron");
+const { dialog } = require('electron').remote
 const notifier = require('node-notifier');
 var sensorCounter = 0;
 var connected = false;
@@ -266,6 +267,15 @@ colibrate.addEventListener('click', function () {
         message: 'colibrate'
     });
     showMessage_10("colibrate");
+});
+
+// chooseFolder
+const chooseFolder = document.getElementById('chooseFolder');
+
+chooseFolder.addEventListener('click', function () {
+    ipc.send('chooseFolder');
+    // console.log('chooseFolder');
+    // console.log(dialog);
 });
 
 // delete earthquake

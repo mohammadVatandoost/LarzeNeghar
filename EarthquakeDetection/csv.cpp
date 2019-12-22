@@ -17,6 +17,8 @@ void appendDataToCSV(QVector<QStringList> dataList, QString fileDirection) {
                 textStream << stringList.join( ',' )+"\n";
             }
             csvFile.close();
+        } else {
+            qDebug() << "apend csv file cannot open:"<<fileDirection;
         }
 }
 

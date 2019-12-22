@@ -104,7 +104,14 @@ void Sensor::addData(int year, int month, int day, int hour, int minute, int sec
             listRow.append(QString::number( dataList[j].value ));
             dataStringList.append(listRow);
         }
-        appendDataToCSV(dataStringList, "./Data/R"+QString::number(routerNumber)+"S"+QString::number(sensorNumber)+bordar+"_"+QString::number(yearBuff)+"_"+QString::number(monthBuff)+"_"+QString::number(dayBuff)+"_"+QString::number(hourBuff)+".csv"); //"_"+QString::number(minuteBuff)+
+        QDir tempDirectory(fileDirectory);
+        if(tempDirectory.exists()) {
+//            qDebug()<< "file storing in: " << "."+fileDirectory ;
+            appendDataToCSV(dataStringList, fileDirectory+"/R"+QString::number(routerNumber)+"S"+QString::number(sensorNumber)+bordar+"_"+QString::number(yearBuff)+"_"+QString::number(monthBuff)+"_"+QString::number(dayBuff)+"_"+QString::number(hourBuff)+".csv"); //"_"+QString::number(minuteBuff)+
+        } else {
+//            qDebug()<< "file storing in: " << "./Data" ;
+            appendDataToCSV(dataStringList, "./Data/R"+QString::number(routerNumber)+"S"+QString::number(sensorNumber)+bordar+"_"+QString::number(yearBuff)+"_"+QString::number(monthBuff)+"_"+QString::number(dayBuff)+"_"+QString::number(hourBuff)+".csv"); //"_"+QString::number(minuteBuff)+
+        }
         dataList.clear();
     }
     // for savingOnLocal
@@ -133,7 +140,12 @@ void Sensor::addData(int year, int month, int day, int hour, int minute, int sec
                 listRow.append(QString::number( dataBuffer[j].value ));
                 dataStringList.append(listRow);
             }
-            appendDataToCSV(dataStringList, "./Data/Earthquake_R"+QString::number(routerNumber)+"S"+QString::number(sensorNumber)+bordar+"_"+QString::number(yearBuff)+"_"+QString::number(monthBuff)+"_"+QString::number(dayBuff)+"_"+QString::number(hourBuff)+".csv"); //"_"+QString::number(minuteBuff)+
+            QDir tempDirectory(fileDirectory);
+            if(tempDirectory.exists()) {
+                appendDataToCSV(dataStringList, fileDirectory+"/Earthquake_R"+QString::number(routerNumber)+"S"+QString::number(sensorNumber)+bordar+"_"+QString::number(yearBuff)+"_"+QString::number(monthBuff)+"_"+QString::number(dayBuff)+"_"+QString::number(hourBuff)+".csv"); //"_"+QString::number(minuteBuff)+
+            } else {
+                appendDataToCSV(dataStringList, "./Data/Earthquake_R"+QString::number(routerNumber)+"S"+QString::number(sensorNumber)+bordar+"_"+QString::number(yearBuff)+"_"+QString::number(monthBuff)+"_"+QString::number(dayBuff)+"_"+QString::number(hourBuff)+".csv"); //"_"+QString::number(minuteBuff)+
+            }
             dataBuffer.clear();
             alghorithmDataBuffer.clear();
             f.reset();
@@ -184,7 +196,14 @@ void Sensor::stopTest()
         listRow.append(QString::number( testDataList[j].value ));
         dataStringList.append(listRow);
     }
-    appendDataToCSV(dataStringList, "./Data/Test_R"+QString::number(routerNumber)+"S"+QString::number(sensorNumber)+bordar+".csv");
+    QDir tempDirectory(fileDirectory);
+    if(tempDirectory.exists()) {
+        qDebug()<< "file storing in: " << fileDirectory ;
+        appendDataToCSV(dataStringList, fileDirectory+"/Test_R"+QString::number(routerNumber)+"S"+QString::number(sensorNumber)+bordar+"_"+QString::number(yearBuff)+"_"+QString::number(monthBuff)+"_"+QString::number(dayBuff)+"_"+QString::number(hourBuff)+".csv"); //"_"+QString::number(minuteBuff)+
+    } else {
+//        qDebug()<< "file storing in: " << "./Data" ;
+        appendDataToCSV(dataStringList, "./Data/Test_R"+QString::number(routerNumber)+"S"+QString::number(sensorNumber)+bordar+"_"+QString::number(yearBuff)+"_"+QString::number(monthBuff)+"_"+QString::number(dayBuff)+"_"+QString::number(hourBuff)+".csv"); //"_"+QString::number(minuteBuff)+
+    }
     testDataList.clear();
 }
 

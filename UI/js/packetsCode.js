@@ -28,6 +28,7 @@ var packetsCode = {
     chart2FFT: "chart2FFT",
     chart3FFT: "chart3FFT",
     colibrateType: "colibrateType",
+    chooseFile: "chooseFile",
     earthquakeType: "earthquakeType"
 } 
 

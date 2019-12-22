@@ -23,6 +23,7 @@
 #include <algorithmthread.h>
 #include <fftw3.h>
 #include <iostream>
+#include "jsonstoring.h"
 
 using namespace std;
 
@@ -70,6 +71,7 @@ public:
     bool checkDataSendToChart2();
     bool checkDataSendToChart3();
     void newDecode();
+    void setFileDirectory(QString fileDirectory);
     QJsonArray calculateAverage(QJsonArray dataArray, QVector<double> *fft_vector) ;
     void sendChartData(QJsonObject tempQJsonObject, int sensorUID, QJsonArray xBordar, QJsonArray yBordar, QJsonArray zBordar);
 //    void sendSensorData
@@ -100,6 +102,9 @@ public:
 //    void writeToUi(string dataToUi);
     // for sensorInfo Sending
     uint8_t sensorInfoCounter = 0;
+
+    JsonStoring jsonStoring;
+    QString folderDirectory;
 signals:
 
 public slots:

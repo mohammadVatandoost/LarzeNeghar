@@ -51,6 +51,7 @@ void SensorsList::addSensor(Sensor newSensor)
     //    appendDataToCSV();
     emit preItemAppended();
     qDebug() << "add new Sensor" ;
+    newSensor.fileDirectory = folderDirectory;
     sensorItems.append(newSensor);
     sensorsListCSVCounter.append(0);
     emit postItemAppended();

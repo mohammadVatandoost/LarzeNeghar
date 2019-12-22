@@ -56,6 +56,7 @@ public:
     bool earthquackHappen = false;
     QString story = "4x";
     QString sensorType = "A";
+    QString fileDirectory = "";
     QList<int> dataX;
     QList<int> dataY;
     QVector<QPointF> data;
