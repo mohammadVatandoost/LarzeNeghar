@@ -11,7 +11,7 @@
   "author": "Mohmmad Vatandoost",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^6.1.5",
+    "electron": "^9.4.0",
     "electron-builder": "^21.2.0",
     "electron-packager": "^14.0.0",
     "node-gyp": "^5.0.2"
